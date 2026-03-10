@@ -1,0 +1,6 @@
+layout:
+  - ColorSystems
+  - FlowChanger
+  - SystemAssigner
+  - CalculateArea
+  - HVACTools

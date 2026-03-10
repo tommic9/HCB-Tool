@@ -1,0 +1,219 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Configurations>Debug R25;Debug R25 Deploy;Debug R26;Debug R26 Deploy;Release R25;Release R26</Configurations>
+    <RevitVersion Condition="'$(RevitVersion)' == '' and $(Configuration.Contains('R25'))">2025</RevitVersion>
+    <RevitVersion Condition="'$(RevitVersion)' == '' and $(Configuration.Contains('R26'))">2026</RevitVersion>
+    <RevitVersion Condition="'$(RevitVersion)' == ''">2025</RevitVersion>
+    <LegacyAssemblyName>HCB.Addin</LegacyAssemblyName>
+    <RevitAddinsDir>$(AppData)\Autodesk\Revit\Addins\$(RevitVersion)</RevitAddinsDir>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>HCB.RevitAddin</RootNamespace>
+    <AssemblyName>HCB.RevitAddin</AssemblyName>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RevitInstallDir Condition="'$(RevitInstallDir)' == ''">C:\Program Files\Autodesk\Revit $(RevitVersion)</RevitInstallDir>
+    <DeployOnBuild Condition="'$(DeployOnBuild)' == ''">true</DeployOnBuild>
+    <DeployRevitAddin Condition="'$(DeployRevitAddin)' == '' and '$(DeployOnBuild)' == 'true'">true</DeployRevitAddin>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(RevitInstallDir)\Revit.exe</StartProgram>
+    <StartWorkingDirectory>$(RevitInstallDir)</StartWorkingDirectory>
+    <StartArguments>/language ENU</StartArguments>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.Contains('Deploy'))">
+    <DeployOnBuild>true</DeployOnBuild>
+    <DeployRevitAddin>true</DeployRevitAddin>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nice3point.Revit.Build.Tasks" Version="3.0.1" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" />
+  </ItemGroup>
+
+
+
+
+
+
+
+
+
+
+
+
+  <ItemGroup>
+    <Content Include="Resources\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Features\**\Resources\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Compile Include="App.cs" />
+    <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
+    <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
+    <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
+    <Compile Include="Features\CopyFilters\Models\ViewListItem.cs" />
+    <Compile Include="Features\CopyFilters\UI\CopyFiltersWindow.xaml.cs" />
+    <Compile Include="Features\FittingsAngle\FittingsAngleCommand.cs" />
+    <Compile Include="Features\FittingsAngle\FittingsAngleService.cs" />
+    <Compile Include="Features\FittingsAngle\Models\FittingsAngleResult.cs" />
+    <Compile Include="Features\ColorVentSystems\ColorVentSystemsCommand.cs" />
+    <Compile Include="Features\ColorVentSystems\ColorVentSystemsService.cs" />
+    <Compile Include="Features\ColorVentSystems\Models\ColorVentSystemsResult.cs" />
+    <Compile Include="Features\ColorVentSystems\Models\SystemColorPackageOption.cs" />
+    <Compile Include="Features\ColorVentSystems\UI\ColorSetSystemsOptionsWindow.xaml.cs" />
+    <Compile Include="Features\ColorUniqueSystems\ColorUniqueSystemsCommand.cs" />
+    <Compile Include="Features\ColorUniqueSystems\ColorUniqueSystemsService.cs" />
+    <Compile Include="Features\ColorUniqueSystems\Models\ColorUniqueSystemsResult.cs" />
+    <Compile Include="Features\ColorUniqueSystems\Models\SystemColorOption.cs" />
+    <Compile Include="Features\ColorVentSystems\Models\VentSystemColorOption.cs" />
+    <Compile Include="Features\DuctFittingsArea\DuctFittingsAreaLinearCommand.cs" />
+    <Compile Include="Features\DuctFittingsArea\DuctFittingsAreaMagicadCommand.cs" />
+    <Compile Include="Features\DuctFittingsArea\DuctFittingsAreaService.cs" />
+    <Compile Include="Features\DuctFittingsArea\Models\DuctFittingsAreaOptions.cs" />
+    <Compile Include="Features\DuctFittingsArea\Models\DuctFittingsAreaResult.cs" />
+    <Compile Include="Features\DuctFittingsArea\UI\DuctFittingsAreaOptionsWindow.xaml.cs" />
+    <Compile Include="Features\Estimate\EstimateCommand.cs" />
+    <Compile Include="Features\Estimate\EstimateService.cs" />
+    <Compile Include="Features\Estimate\Models\EstimateCatalogRow.cs" />
+    <Compile Include="Features\Estimate\Models\EstimateOptions.cs" />
+    <Compile Include="Features\Estimate\Models\EstimateResult.cs" />
+    <Compile Include="Features\Estimate\Models\EstimateUnmatchedRow.cs" />
+    <Compile Include="Features\Estimate\UI\EstimateOptionsWindow.xaml.cs" />
+    <Compile Include="Features\FlowChanger\FlowChangerCommand.cs" />
+    <Compile Include="Features\FlowChanger\FlowChangerService.cs" />
+    <Compile Include="Features\FlowChanger\Models\FlowChangerResult.cs" />
+    <Compile Include="Features\FlowChanger\UI\FlowChangerOptionsWindow.xaml.cs" />
+    <Compile Include="Features\HCWireSize\HCWireSizeCommand.cs" />
+    <Compile Include="Features\HCWireSize\HCWireSizeService.cs" />
+    <Compile Include="Features\HCWireSize\Models\HCWireSizeResult.cs" />
+    <Compile Include="Features\LevelFromHVACElements\LevelFromHVACElementsCommand.cs" />
+    <Compile Include="Features\LevelFromHVACElements\LevelFromHVACElementsService.cs" />
+    <Compile Include="Features\LevelFromHVACElements\Models\LevelFromHvacResult.cs" />
+    <Compile Include="Features\Levels\LevelsCommand.cs" />
+    <Compile Include="Features\Levels\LevelsService.cs" />
+    <Compile Include="Features\Levels\Models\LevelsRenameOptions.cs" />
+    <Compile Include="Features\Levels\Models\LevelsRenameResult.cs" />
+    <Compile Include="Features\Levels\UI\LevelsOptionsWindow.xaml.cs" />
+    <Compile Include="Features\MassOfDuctsFittings\MassOfDuctsFittingsCommand.cs" />
+    <Compile Include="Features\MassOfDuctsFittings\MassOfDuctsFittingsService.cs" />
+    <Compile Include="Features\MassOfDuctsFittings\Models\MassOfDuctsFittingsResult.cs" />
+    <Compile Include="Features\NumberingSystemElements\Models\NumberingSystemElementsResult.cs" />
+    <Compile Include="Features\NumberingSystemElements\NumberingSystemElementsCommand.cs" />
+    <Compile Include="Features\NumberingSystemElements\NumberingSystemElementsService.cs" />
+    <Compile Include="Features\PurgeAnnotations\Models\PurgeAnnotationsResult.cs" />
+    <Compile Include="Features\PurgeAnnotations\PurgeAnnotationsCommand.cs" />
+    <Compile Include="Features\PurgeAnnotations\PurgeAnnotationsService.cs" />
+    <Compile Include="Features\RenameMaterials\Models\RenameMaterialsPreviewItem.cs" />
+    <Compile Include="Features\RenameMaterials\Models\RenameMaterialsResult.cs" />
+    <Compile Include="Features\RenameMaterials\RenameMaterialsCommand.cs" />
+    <Compile Include="Features\RenameMaterials\RenameMaterialsService.cs" />
+    <Compile Include="Features\RenameMaterials\UI\RenameMaterialsPreviewWindow.xaml.cs" />
+    <Compile Include="Features\RenameSheets\Models\RenameSheetsResult.cs" />
+    <Compile Include="Features\RenameSheets\RenameSheetsCommand.cs" />
+    <Compile Include="Features\RenameSheets\RenameSheetsService.cs" />
+    <Compile Include="Features\RenameViews\Models\RenameViewsResult.cs" />
+    <Compile Include="Features\RenameViews\RenameViewsCommand.cs" />
+    <Compile Include="Features\RenameViews\RenameViewsService.cs" />
+    <Compile Include="Features\SharedParameters\Models\SharedParametersResult.cs" />
+    <Compile Include="Features\SharedParameters\Models\SharedParametersOptions.cs" />
+    <Compile Include="Features\SharedParameters\SharedParametersCommand.cs" />
+    <Compile Include="Features\SharedParameters\SharedParametersService.cs" />
+    <Compile Include="Features\SharedParameters\UI\SharedParametersWindow.xaml.cs" />
+    <Compile Include="Features\SpaceParamLinked\Models\SpaceParamLinkedResult.cs" />
+    <Compile Include="Features\SpaceParamLinked\SpaceParamLinkedCommand.cs" />
+    <Compile Include="Features\SpaceParamLinked\SpaceParamLinkedService.cs" />
+    <Compile Include="Features\SpaceToElement\Models\SpaceToElementResult.cs" />
+    <Compile Include="Features\SpaceToElement\SpaceToElementCommand.cs" />
+    <Compile Include="Features\SpaceToElement\SpaceToElementService.cs" />
+    <Compile Include="Features\StylePreview\UI\StylePreviewWindow.xaml.cs" />
+    <Compile Include="Features\SystemAssigner\Models\SystemAssignerResult.cs" />
+    <Compile Include="Features\SystemAssigner\SystemAssignerCommand.cs" />
+    <Compile Include="Features\SystemAssigner\SystemAssignerService.cs" />
+    <Compile Include="Features\TransferViewTemplates\Models\TransferViewTemplatesResult.cs" />
+    <Compile Include="Features\TransferViewTemplates\TransferViewTemplatesCommand.cs" />
+    <Compile Include="Features\TransferViewTemplates\TransferViewTemplatesService.cs" />
+    <Compile Include="Features\TransferViewTemplates\UI\TransferViewTemplatesWindow.xaml.cs" />
+    <Compile Include="Features\UnhideAllElements\Models\UnhideAllElementsResult.cs" />
+    <Compile Include="Features\UnhideAllElements\UnhideAllElementsCommand.cs" />
+    <Compile Include="Features\UnhideAllElements\UnhideAllElementsService.cs" />
+    <Compile Include="Features\ViewFiltersBulkEdit\Models\ViewFiltersBulkEditOptions.cs" />
+    <Compile Include="Features\ViewFiltersBulkEdit\Models\ViewFiltersBulkEditResult.cs" />
+    <Compile Include="Features\ViewFiltersBulkEdit\UI\ViewFiltersBulkEditWindow.xaml.cs" />
+    <Compile Include="Features\ViewFiltersBulkEdit\ViewFiltersBulkEditCommand.cs" />
+    <Compile Include="Features\ViewFiltersBulkEdit\ViewFiltersBulkEditService.cs" />
+    <Compile Include="Features\ViewsDuplicate\Models\ViewsDuplicateOptions.cs" />
+    <Compile Include="Features\ViewsDuplicate\Models\ViewsDuplicateResult.cs" />
+    <Compile Include="Features\ViewsDuplicate\UI\ViewsDuplicateWindow.xaml.cs" />
+    <Compile Include="Features\ViewsDuplicate\ViewsDuplicateCommand.cs" />
+    <Compile Include="Features\ViewsDuplicate\ViewsDuplicateService.cs" />
+    <Compile Include="ImageLoader.cs" />
+    <Compile Include="Infrastructure\RibbonDefinitions.cs" />
+    <Compile Include="Infrastructure\RibbonBuilder.cs" />
+    <Compile Include="Infrastructure\RibbonIconResolver.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Page Include="Features\CopyFilters\UI\CopyFiltersWindow.xaml" />
+    <Page Include="Features\ColorVentSystems\UI\ColorSetSystemsOptionsWindow.xaml" />
+    <Page Include="Features\DuctFittingsArea\UI\DuctFittingsAreaOptionsWindow.xaml" />
+    <Page Include="Features\Estimate\UI\EstimateOptionsWindow.xaml" />
+    <Page Include="Features\FlowChanger\UI\FlowChangerOptionsWindow.xaml" />
+    <Page Include="Features\Levels\UI\LevelsOptionsWindow.xaml" />
+    <Page Include="Features\RenameMaterials\UI\RenameMaterialsPreviewWindow.xaml" />
+    <Page Include="Features\SharedParameters\UI\SharedParametersWindow.xaml" />
+    <Page Include="Features\StylePreview\UI\StylePreviewWindow.xaml" />
+    <Page Include="Features\TransferViewTemplates\UI\TransferViewTemplatesWindow.xaml" />
+    <Page Include="Features\ViewFiltersBulkEdit\UI\ViewFiltersBulkEditWindow.xaml" />
+    <Page Include="Features\ViewsDuplicate\UI\ViewsDuplicateWindow.xaml" />
+    <Compile Include="UI\Controls\DialogFooterBar.xaml.cs" />
+    <Page Include="UI\Controls\DialogFooterBar.xaml" />
+    <Compile Include="UI\Controls\ColorSelectionItem.cs" />
+    <Compile Include="UI\Controls\ColorSelectionWindow.xaml.cs" />
+    <Page Include="UI\Controls\ColorSelectionWindow.xaml" />
+    <Compile Include="UI\Controls\RenameOptionsWindow.xaml.cs" />
+    <Page Include="UI\Controls\RenameOptionsWindow.xaml" />
+    <Compile Include="UI\Controls\SelectionListItem.cs" />
+    <Compile Include="UI\Controls\SelectionActionsBar.xaml.cs" />
+    <Page Include="UI\Controls\SelectionActionsBar.xaml" />
+    <Compile Include="UI\Controls\SelectionListWindow.xaml.cs" />
+    <Page Include="UI\Controls\SelectionListWindow.xaml" />
+    <Compile Include="UI\Controls\SingleValueInputWindow.xaml.cs" />
+    <Page Include="UI\Controls\SingleValueInputWindow.xaml" />
+    <Page Include="UI\Styles\SharedStyles.xaml" />
+  </ItemGroup>
+
+  <Target Name="RemoveLegacyAddinDeployment" BeforeTargets="Build" Condition="'$(DeployRevitAddin)' == 'true'">
+    <Delete Files="$(RevitAddinsDir)\$(LegacyAssemblyName).addin" TreatErrorsAsWarnings="true" />
+    <RemoveDir Directories="$(RevitAddinsDir)\$(LegacyAssemblyName)" Condition="Exists('$(RevitAddinsDir)\$(LegacyAssemblyName)')" />
+  </Target>
+
+  <Target Name="RemoveLegacyPublishedArtifacts" BeforeTargets="PublishRevitAddinFiles">
+    <Delete Files="$(PublishDir)\Revit $(RevitVersion) $(Configuration) addin\$(LegacyAssemblyName).addin" TreatErrorsAsWarnings="true" />
+    <RemoveDir Directories="$(PublishDir)\Revit $(RevitVersion) $(Configuration) addin\$(LegacyAssemblyName)" Condition="Exists('$(PublishDir)\Revit $(RevitVersion) $(Configuration) addin\$(LegacyAssemblyName)')" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </Target>
+</Project>
+

@@ -1,0 +1,3 @@
+Link do github z wtyczką napisaną przezemnie w C# na której uczyłem się tego języka i API Revita: https://github.com/tommic9/GuTom.git
+Link do github z wtyczką na podstawie której uczyłem się, jest ona mniej więcej tożsama z moją ale ma pełny zakres możliwosci Revit API: https://github.com/aussieBIMguru/guRoo.git
+Link do github z wtyczką pyrevit napisaną przezemnie z pomocą AI w python. Zaiera narzedzia na których bedziemy bazować przepisując ja do C#: https://github.com/tommic9/HCB_Tools.git

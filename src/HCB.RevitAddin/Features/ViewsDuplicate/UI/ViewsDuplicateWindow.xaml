@@ -1,0 +1,69 @@
+<Window x:Class="HCB.RevitAddin.Features.ViewsDuplicate.UI.ViewsDuplicateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Duplicate Views"
+        Width="440"
+        Height="340"
+        MinWidth="400"
+        MinHeight="300"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Duplicate Views"
+                   Style="{StaticResource SectionTitleStyle}" />
+        <GroupBox Grid.Row="1"
+                  Margin="0,16,0,0"
+                  Header="Ustawienia duplikacji">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Liczba kopii"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="CopiesCountTextBox"
+                         Grid.Row="0"
+                         Grid.Column="1"
+                         Text="1" />
+                <TextBlock Grid.Row="2"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Tryb duplikacji"
+                           VerticalAlignment="Center" />
+                <ComboBox x:Name="DuplicateModeComboBox"
+                          Grid.Row="2"
+                          Grid.Column="1"
+                          SelectedIndex="1">
+                    <ComboBoxItem Content="Duplicate" />
+                    <ComboBoxItem Content="WithDetailing" />
+                    <ComboBoxItem Content="AsDependent" />
+                </ComboBox>
+            </Grid>
+        </GroupBox>
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="2"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Duplikuj widoki"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

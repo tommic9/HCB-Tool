@@ -1,0 +1,60 @@
+<Window x:Class="HCB.RevitAddin.Features.RenameMaterials.UI.RenameMaterialsPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Rename Materials"
+        Width="860"
+        Height="560"
+        MinWidth="760"
+        MinHeight="460"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Rename Materials Preview"
+                   Style="{StaticResource SectionTitleStyle}" />
+
+        <GroupBox Grid.Row="1"
+                  Margin="0,16,0,0"
+                  Header="Podglad zmian">
+            <DockPanel LastChildFill="True">
+                <CheckBox x:Name="ProblemsOnlyCheckBox"
+                          DockPanel.Dock="Top"
+                          Margin="0,0,0,12"
+                          Content="Pokaz tylko konflikty i pozycje bez zmian"
+                          Checked="ProblemsOnlyCheckBox_OnChanged"
+                          Unchecked="ProblemsOnlyCheckBox_OnChanged" />
+
+                <ListView x:Name="PreviewListView">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Width="280" Header="Stara nazwa" DisplayMemberBinding="{Binding CurrentName}" />
+                            <GridViewColumn Width="360" Header="Nowa nazwa" DisplayMemberBinding="{Binding NewName}" />
+                            <GridViewColumn Width="120" Header="Status" DisplayMemberBinding="{Binding Status}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </DockPanel>
+        </GroupBox>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="2"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Zastosuj"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

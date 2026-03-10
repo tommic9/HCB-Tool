@@ -1,0 +1,94 @@
+Category;Shape;MatchKey;SizePattern;Angle;Unit;UnitPrice;TypeNamePattern;Notes
+Duct;round;ANY;100;;m;8,63;Duct;Duct fi 100/0,45-3m
+Duct;round;ANY;125;;m;10,63;Duct;Duct fi 125/0,45-3m
+Duct;round;ANY;160;;m;13,13;Duct;Duct fi 160/0,45-3m
+Duct;round;ANY;200;;m;16,88;Duct;Duct fi 200/0,45-3m
+Duct;round;ANY;250;;m;21,88;Duct;Duct fi 250/0,45-3m
+Duct;round;ANY;315;;m;28,75;Duct;Duct fi 315/0,45-3m
+Duct;round;ANY;355;;m;40;Duct;Duct fi 355/0,5-3m
+Duct;round;ANY;400;;m;45;Duct;Duct fi 400/0,5-3m
+Duct;round;ANY;450;;m;52,92;Duct;Duct fi 450/0,5-3m
+Duct;round;ANY;500;;m;66,25;Duct;Duct fi 500/0,6-3m
+Duct;round;ANY;560;;m;101,67;Duct;Duct fi 560/0,6-3m
+Duct Fitting;round;TYPENAME;100;90;szt;10,25;BU;BU fi 100/90°
+Duct Fitting;round;TYPENAME;125;90;szt;12,5;BU;BU fi 125/90°
+Duct Fitting;round;TYPENAME;160;90;szt;19,13;BU;BU fi 160/90°
+Duct Fitting;round;TYPENAME;200;90;szt;25,75;BU;BU fi 200/90°
+Duct Fitting;round;TYPENAME;250;90;szt;30,13;BFU;BFU fi 250/90°
+Duct Fitting;round;TYPENAME;315;90;szt;40,63;BFU;BFU fi 315/90°
+Duct Fitting;round;TYPENAME;355;90;szt;52,75;BFU;BFU fi 355/90°
+Duct Fitting;round;TYPENAME;400;90;szt;71,63;BFU;BFU fi 400/90°
+Duct Fitting;round;TYPENAME;450;90;szt;112,5;BFU;BFU fi 450/90°
+Duct Fitting;round;TYPENAME;500;90;szt;99,38;BFU;BFU fi 500/90°
+Duct Fitting;round;TYPENAME;560;90;szt;174,88;BFU;BFU fi 560/90°
+Duct Fitting;round;TYPENAME;100;45;szt;8,38;BU;BU fi 100/45°
+Duct Fitting;round;TYPENAME;125;45;szt;8,88;BU;BU fi 125/45°
+Duct Fitting;round;TYPENAME;160;45;szt;11,75;BU;BU fi 160/45°
+Duct Fitting;round;TYPENAME;200;45;szt;16,5;BU;BU fi 200/45°
+Duct Fitting;round;TYPENAME;250;45;szt;22,38;BFU;BFU fi 250/45°
+Duct Fitting;round;TYPENAME;315;45;szt;29,38;BFU;BFU fi 315/45°
+Duct Fitting;round;TYPENAME;355;45;szt;36,38;BFU;BFU fi 355/45°
+Duct Fitting;round;TYPENAME;400;45;szt;45,63;BFU;BFU fi 400/45°
+Duct Fitting;round;TYPENAME;450;45;szt;71,5;BFU;BFU fi 450/45°
+Duct Fitting;round;TYPENAME;500;45;szt;85,63;BFU;BFU fi 500/45°
+Duct Fitting;round;TYPENAME;560;45;szt;119,85;BFU;BFU fi 560/45°
+Duct Fitting;round;TYPENAME;100;;szt;16;TCPU;TCPU fi 100
+Duct Fitting;round;TYPENAME;125;;szt;17,38;TCPU;TCPU fi 125
+Duct Fitting;round;TYPENAME;160;;szt;28,44;TCPU;TCPU fi 160
+Duct Fitting;round;TYPENAME;200;;szt;29,75;TCPU;TCPU fi 200
+Duct Fitting;round;TYPENAME;250;;szt;40;TCPU;TCPU fi 250
+Duct Fitting;round;TYPENAME;315;;szt;67,6;TCPU;TCPU fi 315
+Duct Fitting;round;TYPENAME;355;;szt;104;TCPU;TCPU fi 355
+Duct Fitting;round;TYPENAME;400;;szt;96,75;TCPU;TCPU fi 400
+Duct Fitting;round;TYPENAME;450;;szt;159,25;TCPU;TCPU fi 450
+Duct Fitting;round;TYPENAME;500;;szt;207;TCPU;TCPU fi 500
+Duct Fitting;round;TYPENAME;100;;szt;4;NPU;NPU fi 100
+Duct Fitting;round;TYPENAME;125;;szt;4,25;NPU;NPU fi 125
+Duct Fitting;round;TYPENAME;160;;szt;5;NPU;NPU fi 160
+Duct Fitting;round;TYPENAME;200;;szt;5,69;NPU;NPU fi 200
+Duct Fitting;round;TYPENAME;250;;szt;8,19;NPU;NPU fi 250
+Duct Fitting;round;TYPENAME;315;;szt;10,75;NPU;NPU fi 315
+Duct Fitting;round;TYPENAME;355;;szt;15,25;NPU;NPU fi 355
+Duct Fitting;round;TYPENAME;400;;szt;18,13;NPU;NPU fi 400
+Duct Fitting;round;TYPENAME;450;;szt;27,13;NPU;NPU fi 450
+Duct Fitting;round;TYPENAME;500;;szt;30,63;NPU;NPU fi 500
+Duct Fitting;round;TYPENAME;560;;szt;40,88;NPU;NPU fi 560
+Duct Accessory;round;TYPENAME;100;;szt;14,95;DRU;DRU fi 100
+Duct Accessory;round;TYPENAME;125;;szt;15,88;DRU;DRU fi 125
+Duct Accessory;round;TYPENAME;160;;szt;19,5;DRU;DRU fi 160
+Duct Accessory;round;TYPENAME;200;;szt;20,75;DRU;DRU fi 200
+Duct Accessory;round;TYPENAME;250;;szt;27,25;DRU;DRU fi 250
+Duct Accessory;round;TYPENAME;315;;szt;36,5;DRU;DRU fi 315
+Duct Accessory;round;TYPENAME;355;;szt;51,63;DRU;DRU fi 355
+Duct Accessory;round;TYPENAME;400;;szt;61,25;DRU;DRU fi 400
+Duct Accessory;round;TYPENAME;450;;szt;85;DRU;DRU fi 450
+Duct Fitting;round;TYPENAME;125/100;;szt;7,94;RCLU;RCLU fi 125/100
+Duct Fitting;round;TYPENAME;160/125;;szt;9,13;RCLU;RCLU fi 160/125
+Duct Fitting;round;TYPENAME;200/160;;szt;13,5;RCLU;RCLU fi 200/160
+Duct Fitting;round;TYPENAME;250/200;;szt;19,74;RCLU;RCLU fi 250/200
+Duct Fitting;round;TYPENAME;315/250;;szt;29,34;RCLU;RCLU fi 315/250
+Duct Fitting;round;TYPENAME;355/315;;szt;41,5;RCU;RCU fi 355/315
+Duct Fitting;round;TYPENAME;400/355;;szt;53,38;RCU;RCU fi 400/355
+Duct Fitting;round;TYPENAME;450/400;;szt;67,13;RCU;RCU fi 450/400
+Duct Fitting;round;TYPENAME;500/400;;szt;71,54;RCU;RCU fi 500/400
+Duct Accessory;round;TYPENAME;100;;szt;2,86;Obejma;Obejma do rur spiro z ok³adzin¹ fi 100 mm
+Duct Accessory;round;TYPENAME;125;;szt;3,08;Obejma;Obejma do rur spiro z ok³adzin¹ fi 125 mm
+Duct Accessory;round;TYPENAME;160;;szt;4,15;Obejma;Obejma do rur spiro z ok³adzin¹ fi 160 mm
+Duct Accessory;round;TYPENAME;200;;szt;5,08;Obejma;Obejma do rur spiro z ok³adzin¹ fi 200 mm
+Duct Accessory;round;TYPENAME;250;;szt;6,62;Obejma;Obejma do rur spiro z ok³adzin¹ fi 250 mm
+Duct Accessory;round;TYPENAME;315;;szt;7,95;Obejma;Obejma do rur spiro z ok³adzin¹ fi 315 mm
+Duct Accessory;round;TYPENAME;355;;szt;17,74;Obejma;Obejma do rur spiro z ok³adzin¹ fi 355 mm
+Duct Accessory;round;TYPENAME;400;;szt;20,68;Obejma;Obejma do rur spiro z ok³adzin¹ fi 400 mm
+Duct Accessory;round;TYPENAME;450;;szt;19,05;Obejma;Obejma do rur spiro z ok³adzin¹ fi 450 mm
+Duct Accessory;round;TYPENAME;500;;szt;18,33;Obejma;Obejma do rur spiro z ok³adzin¹ fi 500 mm
+Duct Accessory;round;TYPENAME;560;;szt;23,38;Obejma;Obejma do rur spiro z ok³adzin¹ fi 560 mm
+Duct;rect;MAX_DIM_LEQ ;500;;m2;50,9;;do 500
+Duct Fitting;rect;MAX_DIM_LEQ ;500;;m2;61,4;;do 500
+Duct;rect;MAX_DIM_LEQ ;1000;;m2;52,9;;500 - 1000
+Duct Fitting;rect;MAX_DIM_LEQ ;1000;;m2;63,9;;500 - 1000
+Duct;rect;MAX_DIM_LEQ ;1500;;m2;64,9;;1000 - 1500
+Duct Fitting;rect;MAX_DIM_LEQ ;1500;;m2;77,9;;1000 - 1500
+Duct;rect;MAX_DIM_LEQ ;2000;;m2;76,9;;1500 - 2000
+Duct Fitting;rect;MAX_DIM_LEQ ;2000;;m2;81,9;;1500 - 2000
+Duct;rect;MAX_DIM_LEQ ;2500;;m2;99,9;;2000 - 2500
+Duct Fitting;rect;MAX_DIM_LEQ ;2500;;m2;100,9;;2000 - 2500

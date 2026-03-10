@@ -1,0 +1,68 @@
+<Window x:Class="HCB.RevitAddin.UI.Controls.SelectionListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Wybor elementow"
+        Width="640"
+        Height="720"
+        MinWidth="480"
+        MinHeight="520"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="TitleTextBlock"
+                   Style="{StaticResource SectionTitleStyle}" />
+
+        <TextBox x:Name="SearchTextBox"
+                 Grid.Row="1"
+                 Margin="0,16,0,8"
+                 TextChanged="SearchTextBox_OnTextChanged" />
+
+        <ComboBox x:Name="FilterGroupComboBox"
+                  Grid.Row="2"
+                  Margin="0,0,0,8"
+                  DisplayMemberPath="DisplayName"
+                  SelectedValuePath="Value"
+                  SelectionChanged="FilterGroupComboBox_OnSelectionChanged"
+                  Visibility="Collapsed" />
+
+        <GroupBox Grid.Row="3"
+                  x:Name="ItemsGroupBox"
+                  Padding="10">
+            <DockPanel LastChildFill="True">
+                <controls:SelectionActionsBar DockPanel.Dock="Top"
+                                              Margin="0,0,0,8"
+                                              LeftButtonText="Wszystkie"
+                                              RightButtonText="Brak"
+                                              LeftButtonClick="SelectAllButton_OnClick"
+                                              RightButtonClick="SelectNoneButton_OnClick" />
+                <ListBox x:Name="ItemsListBox"
+                         DisplayMemberPath="DisplayName"
+                         SelectionMode="Extended" />
+            </DockPanel>
+        </GroupBox>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="4"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Wybierz"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

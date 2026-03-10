@@ -1,0 +1,13 @@
+<Window x:Class="HCB.RevitAddin.Features._Template.UI.FeatureWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Feature Template"
+        Height="320"
+        Width="520"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="16">
+        <TextBlock TextWrapping="Wrap"
+                   VerticalAlignment="Center"
+                   Text="Use this window only when the tool needs guided user input." />
+    </Grid>
+</Window>

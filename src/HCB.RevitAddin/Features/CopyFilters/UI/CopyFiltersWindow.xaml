@@ -1,0 +1,119 @@
+<Window x:Class="HCB.RevitAddin.Features.CopyFilters.UI.CopyFiltersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Kopiowanie filtrów"
+        Width="1080"
+        Height="720"
+        MinWidth="820"
+        MinHeight="520"
+        ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Style="{StaticResource SectionTitleStyle}"
+                   Text="Kopiowanie filtrów widoku" />
+
+        <Grid Grid.Row="1"
+              Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2.4*" MinWidth="220" />
+                <ColumnDefinition Width="6" />
+                <ColumnDefinition Width="1.6*" MinWidth="180" />
+                <ColumnDefinition Width="6" />
+                <ColumnDefinition Width="2.4*" MinWidth="220" />
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Header="1. Widok lub szablon źródłowy"
+                      Padding="10">
+                <DockPanel LastChildFill="True">
+                    <TextBox x:Name="SourceSearchTextBox"
+                             Margin="0,0,0,8"
+                             VerticalContentAlignment="Center"
+                             ToolTip="Filtruj widoki po nazwie."
+                             TextChanged="SourceSearchTextBox_OnTextChanged"
+                             DockPanel.Dock="Top" />
+                    <ListBox x:Name="SourceViewsListBox"
+                             DisplayMemberPath="DisplayName"
+                             SelectionChanged="SourceViewsListBox_OnSelectionChanged" />
+                </DockPanel>
+            </GroupBox>
+
+            <GridSplitter Grid.Column="1"
+                          Width="6"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="Transparent"
+                          ResizeBehavior="PreviousAndNext"
+                          ResizeDirection="Columns"
+                          ShowsPreview="True" />
+
+            <GroupBox Grid.Column="2"
+                      Header="2. Filtry"
+                      Margin="12,0">
+                <DockPanel LastChildFill="True">
+                    <controls:SelectionActionsBar DockPanel.Dock="Top"
+                                                  Margin="0,0,0,8"
+                                                  LeftButtonText="Wszystkie"
+                                                  RightButtonText="Brak"
+                                                  LeftButtonClick="SelectAllFiltersButton_OnClick"
+                                                  RightButtonClick="ClearFiltersButton_OnClick" />
+                    <ListBox x:Name="FiltersListBox"
+                             DisplayMemberPath="Name"
+                             SelectionMode="Extended" />
+                </DockPanel>
+            </GroupBox>
+
+            <GridSplitter Grid.Column="3"
+                          Width="6"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="Transparent"
+                          ResizeBehavior="PreviousAndNext"
+                          ResizeDirection="Columns"
+                          ShowsPreview="True" />
+
+            <GroupBox Grid.Column="4"
+                      Header="3. Widoki lub szablony docelowe"
+                      Padding="10">
+                <DockPanel LastChildFill="True">
+                    <TextBox x:Name="DestinationSearchTextBox"
+                             Margin="0,0,0,8"
+                             VerticalContentAlignment="Center"
+                             ToolTip="Filtruj widoki po nazwie."
+                             TextChanged="DestinationSearchTextBox_OnTextChanged"
+                             DockPanel.Dock="Top" />
+                    <controls:SelectionActionsBar DockPanel.Dock="Top"
+                                                  Margin="0,0,0,8"
+                                                  LeftButtonText="Wszystkie"
+                                                  RightButtonText="Brak"
+                                                  LeftButtonClick="SelectAllDestinationsButton_OnClick"
+                                                  RightButtonClick="ClearDestinationsButton_OnClick" />
+                    <ListBox x:Name="DestinationViewsListBox"
+                             DisplayMemberPath="DisplayName"
+                             SelectionMode="Extended" />
+                </DockPanel>
+            </GroupBox>
+        </Grid>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="2"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Kopiuj filtry"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="CopyButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

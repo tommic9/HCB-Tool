@@ -1,0 +1,84 @@
+<Window x:Class="HCB.RevitAddin.Features.Estimate.UI.EstimateOptionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Estimate"
+        Width="640"
+        Height="300"
+        MinWidth="620"
+        MinHeight="280"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Estimate"
+                   Style="{StaticResource SectionTitleStyle}" />
+
+        <GroupBox Grid.Row="1"
+                  Margin="0,16,0,0"
+                  Header="Ustawienia cennika">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="130" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Plik CSV"
+                           VerticalAlignment="Center" />
+
+                <TextBox x:Name="CatalogPathTextBox"
+                         Grid.Row="0"
+                         Grid.Column="1"
+                         Margin="0,0,12,0"
+                         VerticalContentAlignment="Center" />
+
+                <Button Grid.Row="0"
+                        Grid.Column="2"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Content="Przegladaj"
+                        Click="BrowseButton_OnClick" />
+
+                <CheckBox x:Name="AddFoilCheckBox"
+                          Grid.Row="2"
+                          Grid.ColumnSpan="3"
+                          Content="Dolicz foliowanie dla prostokatnych Duct i Duct Fitting"
+                          VerticalAlignment="Center" />
+
+                <TextBlock Grid.Row="4"
+                           Grid.ColumnSpan="3"
+                           Style="{StaticResource StatusTextStyle}"
+                           Text="Narzedzie aktualizuje HC_Cena_Jednostkowa i HC_Koszt dla elementow wentylacji na podstawie wybranego cennika." />
+            </Grid>
+        </GroupBox>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="2"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Przelicz"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

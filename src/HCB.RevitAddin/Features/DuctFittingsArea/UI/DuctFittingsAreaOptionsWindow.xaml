@@ -1,0 +1,54 @@
+<Window x:Class="HCB.RevitAddin.Features.DuctFittingsArea.UI.DuctFittingsAreaOptionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Ustawienia Area"
+        Width="500"
+        Height="260"
+        MinWidth="460"
+        MinHeight="240"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Style="{StaticResource SectionTitleStyle}"
+                   Text="Ustawienia HC Area" />
+
+        <GroupBox Grid.Row="1"
+                  Margin="0,16,0,0"
+                  Header="Wartosci ponizej 1 m2">
+            <StackPanel>
+                <RadioButton x:Name="KeepRealValuesRadioButton"
+                             Margin="0,0,0,10"
+                             Content="Zostaw realne wartosci z obliczen i kopiowania"
+                             IsChecked="True" />
+                <RadioButton x:Name="ClampToOneRadioButton"
+                             Content="Ustaw minimum 1 m2 dla wartosci ponizej 1" />
+                <TextBlock Margin="0,12,0,0"
+                           Style="{StaticResource StatusTextStyle}"
+                           Text="Opcja dotyczy zarowno ksztaltek liczonych geometrycznie, jak i kanalow kopiowanych z natywnej powierzchni Revit." />
+            </StackPanel>
+        </GroupBox>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="2"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Uruchom"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick"
+                                  StatusText="Wybierz sposob zapisu wartosci do HC_Area." />
+    </Grid>
+</Window>

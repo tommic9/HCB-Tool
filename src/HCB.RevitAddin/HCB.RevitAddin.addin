@@ -1,0 +1,14 @@
+<RevitAddIns>
+  <ManifestSettings>
+    <UseRevitContext>False</UseRevitContext>
+    <ContextName>HCB.RevitAddin</ContextName>
+  </ManifestSettings>
+  <AddIn Type="Application">
+    <Name>HCB Addin</Name>
+    <Assembly>HCB.RevitAddin\HCB.RevitAddin.dll</Assembly>
+    <AddInId>8B1D4E5F-AC07-47BA-A4A1-6E52B6B06B91</AddInId>
+    <FullClassName>HCB.RevitAddin.App</FullClassName>
+    <VendorId>HCB</VendorId>
+    <VendorDescription>HCB Revit tools</VendorDescription>
+  </AddIn>
+</RevitAddIns>
