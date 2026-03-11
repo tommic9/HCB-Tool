@@ -34,7 +34,7 @@ public sealed class UpgradeAndCopyService
     {
         DateTime startedAt = DateTime.UtcNow;
         WithoutOpenFileScanItem scan = _fileMetadataService.Scan(filePath);
-        string targetPath = Path.Combine(outputFolderPath, Path.GetFileName(filePath));
+        string targetPath = BuildTargetPath(application, filePath, outputFolderPath);
 
         try
         {
@@ -100,6 +100,31 @@ public sealed class UpgradeAndCopyService
         }
     }
 
+    private static string BuildTargetPath(Application application, string sourcePath, string outputFolderPath)
+    {
+        string extension = Path.GetExtension(sourcePath);
+        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourcePath);
+        string suffix = GetRevitSuffix(application);
+
+        if (!fileNameWithoutExtension.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+        {
+            fileNameWithoutExtension += suffix;
+        }
+
+        return Path.Combine(outputFolderPath, fileNameWithoutExtension + extension);
+    }
+
+    private static string GetRevitSuffix(Application application)
+    {
+        string versionNumber = application.VersionNumber ?? string.Empty;
+        if (versionNumber.Length >= 4 && int.TryParse(versionNumber[^2..], out _))
+        {
+            return $"_R{versionNumber[^2..]}";
+        }
+
+        return "_RVT";
+    }
+
     private static WithoutOpenOperationLogEntry CreateLog(string filePath, WithoutOpenOperationStatus status, string message, DateTime startedAt)
     {
         return new WithoutOpenOperationLogEntry
@@ -112,4 +137,3 @@ public sealed class UpgradeAndCopyService
         };
     }
 }
-

@@ -58,6 +58,11 @@ public partial class RenameFamilyContentWindow : Window
 
     private void UpdateOutputFolderState()
     {
+        if (OutputFolderTextBox == null || SaveAsCopyCheckBox == null)
+        {
+            return;
+        }
+
         OutputFolderTextBox.IsEnabled = SaveAsCopyCheckBox.IsChecked == true;
     }
 }
