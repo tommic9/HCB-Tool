@@ -6,8 +6,14 @@ namespace HCB.RevitAddin
     internal static class RibbonDefinitions
     {
         public const string TabName = "HCB Tools";
+        private static readonly IReadOnlyList<RibbonPanelDefinition> CachedDefinitions = CreateDefinitions();
 
         public static IReadOnlyList<RibbonPanelDefinition> Create()
+        {
+            return CachedDefinitions;
+        }
+
+        private static IReadOnlyList<RibbonPanelDefinition> CreateDefinitions()
         {
             return
             [
@@ -86,10 +92,10 @@ namespace HCB.RevitAddin
                                             "Dla kanalow grupuje po rozmiarze i wybranej dlugosci, a dla ksztaltek po zestawie wymiarow LIN_VE i kacie."),
                                         new RibbonPushButtonDefinition(
                                             "HcbAccessoryTerminalNumberingButton",
-                                            "Acc&Term Num",
+                                            "MEP Item Numbering",
                                             typeof(Features.AccessoryTerminalNumbering.AccessoryTerminalNumberingCommand),
-                                            "Numeruje akcesoria i terminale powietrzne wedlug systemu, typu i przeplywu.",
-                                            "Akcesoria dostaja numer z opcjonalnym Type Mark, a terminale numer AT.N; typy FabricAir sa pomijane.")
+                                            "Numeruje elementy MEP wedlug systemu, kategorii i cech grupujacych.",
+                                            "Obsluguje Duct Accessory, Pipe Accessory i Air Terminal; zapisuje numer do wybranego parametru i pomija typy FabricAir.")
                                     ])
                             ]),
                         new RibbonPushButtonDefinition(
@@ -126,27 +132,12 @@ namespace HCB.RevitAddin
                         ,
                         new RibbonStackDefinition(
                             [
-                                new RibbonPulldownDefinition(
-                                    "HcbSystemColorsPulldown",
-                                    "System Colors",
-                                    typeof(Features.ColorVentSystems.ColorVentSystemsCommand),
-                                    "Resources\\Ribbon\\SystemColors",
-                                    "Narzedzia odpowiedzialne za kolorystyke systemow w projekcie.",
-                                    "Grupa narzedzi do nakladania kolorow i filtrow systemowych.",
-                                    [
-                                        new RibbonPushButtonDefinition(
-                                            "HcbColorVentSystemsButton",
-                                            "Color Systems",
-                                            typeof(Features.ColorVentSystems.ColorVentSystemsCommand),
-                                            "Naklada filtry widoku i kolory dla systemow wentylacyjnych.",
-                                            "Tworzy lub wykorzystuje istniejace filtry systemow i ustawia nadpisania grafiki w aktywnym widoku."),
-                                        new RibbonPushButtonDefinition(
-                                            "HcbColorUniqueSystemsButton",
-                                            "Unique Colors",
-                                            typeof(Features.ColorUniqueSystems.ColorUniqueSystemsCommand),
-                                            "Naklada kolory dla wybranych systemow wentylacyjnych i rurowych.",
-                                            "Pozwala wskazac unikalne systemy i przypisac im nadpisania graficzne w aktywnym widoku.")
-                                    ]),
+                                new RibbonPushButtonDefinition(
+                                    "HcbColorUniqueSystemsButton",
+                                    "Unique Colors",
+                                    typeof(Features.ColorUniqueSystems.ColorUniqueSystemsCommand),
+                                    "Naklada kolory dla wybranych systemow wentylacyjnych i rurowych z konfiguracji CSV.",
+                                    "Pozwala wskazac systemy z pliku Systemy HCB.csv, przefiltrowac je po grupach i przypisac nadpisania graficzne w aktywnym widoku."),
                                 new RibbonPushButtonDefinition(
                                     "HcbFlowChangerButton",
                                     "Flow",
@@ -179,12 +170,6 @@ namespace HCB.RevitAddin
                                             typeof(Features.SystemAssigner.SystemAssignerCommand),
                                             "Propaguje wartosc HC_System z urzadzenia na elementy przypisanych systemow.",
                                             "Wybierasz urzadzenia Mechanical Equipment, a narzedzie nadpisuje HC_System dla elementow systemu."),
-                                        new RibbonPushButtonDefinition(
-                                            "HcbNumberingSystemElementsButton",
-                                            "Numbering System",
-                                            typeof(Features.NumberingSystemElements.NumberingSystemElementsCommand),
-                                            "Numeruje kanaly i ksztaltki po polaczeniach MEP od wybranego urzadzenia.",
-                                            "Nadaje LIN_POSITION_NUMBER_A na podstawie grup wymiarowych i kolejnosci przejscia po sieci."),
                                         new RibbonPushButtonDefinition(
                                             "HcbMassOfDuctsFittingsButton",
                                             "Mass",
@@ -375,6 +360,10 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
+
+
+
 
 
 
