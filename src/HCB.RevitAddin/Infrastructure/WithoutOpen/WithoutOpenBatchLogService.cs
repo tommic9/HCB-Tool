@@ -42,7 +42,7 @@ public sealed class WithoutOpenBatchLogService
     public void ExportOperationsToCsv(IEnumerable<WithoutOpenOperationLogEntry> entries, string outputPath)
     {
         StringBuilder builder = new();
-        builder.AppendLine("FilePath,OperationName,Status,Message,DurationSeconds");
+        builder.AppendLine("FilePath,OperationName,Status,Message,OutputPath,DurationSeconds");
 
         foreach (WithoutOpenOperationLogEntry entry in entries)
         {
@@ -51,6 +51,7 @@ public sealed class WithoutOpenBatchLogService
                 Escape(entry.OperationName),
                 Escape(entry.Status.ToString()),
                 Escape(entry.Message),
+                Escape(entry.OutputPath),
                 entry.Duration.TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture)));
         }
 

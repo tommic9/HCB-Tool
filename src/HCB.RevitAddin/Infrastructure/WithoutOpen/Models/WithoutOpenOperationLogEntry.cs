@@ -11,6 +11,7 @@ public sealed class WithoutOpenOperationLogEntry
 
     public string Message { get; init; } = string.Empty;
 
+    public string OutputPath { get; init; } = string.Empty;
+
     public TimeSpan Duration { get; init; }
 }
-

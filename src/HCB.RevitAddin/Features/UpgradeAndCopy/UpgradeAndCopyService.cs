@@ -33,6 +33,36 @@ public sealed class UpgradeAndCopyService
         };
     }
 
+    public UpgradeAndCopyResult ProcessUsingSourceFolders(Application application, IEnumerable<string> filePaths)
+    {
+        IReadOnlyList<string> normalizedPaths = _fileDiscoveryService.Normalize(filePaths);
+        List<WithoutOpenOperationLogEntry> entries = new(normalizedPaths.Count);
+
+        foreach (string filePath in normalizedPaths)
+        {
+            string? sourceFolderPath = Path.GetDirectoryName(filePath);
+            if (string.IsNullOrWhiteSpace(sourceFolderPath))
+            {
+                entries.Add(new WithoutOpenOperationLogEntry
+                {
+                    FilePath = filePath,
+                    OperationName = "Upgrade And Copy",
+                    Status = WithoutOpenOperationStatus.Failed,
+                    Message = "Nie udalo sie ustalic folderu zrodlowego."
+                });
+                continue;
+            }
+
+            Directory.CreateDirectory(sourceFolderPath);
+            entries.Add(ProcessSingle(application, filePath, sourceFolderPath));
+        }
+
+        return new UpgradeAndCopyResult
+        {
+            Entries = entries
+        };
+    }
+
     private WithoutOpenOperationLogEntry ProcessSingle(Application application, string filePath, string outputFolderPath)
     {
         DateTime startedAt = DateTime.UtcNow;
@@ -64,7 +94,7 @@ public sealed class UpgradeAndCopyService
             if (scan.IsSavedInCurrentVersion)
             {
                 File.Copy(filePath, targetPath, true);
-                return CreateLog(filePath, WithoutOpenOperationStatus.Success, $"Skopiowano bez upgrade: {targetPath}", startedAt);
+                return CreateLog(filePath, WithoutOpenOperationStatus.Success, $"Skopiowano bez upgrade: {targetPath}", startedAt, targetPath);
             }
 
             Document? document = null;
@@ -95,7 +125,7 @@ public sealed class UpgradeAndCopyService
                 }
             }
 
-            return CreateLog(filePath, WithoutOpenOperationStatus.Success, $"Zapisano kopie po upgrade: {targetPath}", startedAt);
+            return CreateLog(filePath, WithoutOpenOperationStatus.Success, $"Zapisano kopie po upgrade: {targetPath}", startedAt, targetPath);
         }
         catch (Exception exception)
         {
@@ -124,7 +154,7 @@ public sealed class UpgradeAndCopyService
         return "_RVT";
     }
 
-    private static WithoutOpenOperationLogEntry CreateLog(string filePath, WithoutOpenOperationStatus status, string message, DateTime startedAt)
+    private static WithoutOpenOperationLogEntry CreateLog(string filePath, WithoutOpenOperationStatus status, string message, DateTime startedAt, string outputPath = "")
     {
         return new WithoutOpenOperationLogEntry
         {
@@ -132,6 +162,7 @@ public sealed class UpgradeAndCopyService
             OperationName = "Upgrade And Copy",
             Status = status,
             Message = message,
+            OutputPath = outputPath,
             Duration = DateTime.UtcNow - startedAt
         };
     }
