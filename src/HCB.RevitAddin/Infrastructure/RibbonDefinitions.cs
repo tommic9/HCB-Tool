@@ -33,7 +33,7 @@ namespace HCB.RevitAddin
                                     "Bulk Edit",
                                     typeof(Features.ViewFiltersBulkEdit.ViewFiltersBulkEditCommand),
                                     "Masowo zmienia stan i widocznosc wspolnych filtrow na wielu widokach.",
-                                    "Pozwala wybrac widoki, wspolne filtry oraz akcje wlaczania, wylaczania i ukrywania filtrow.")
+                                    "Pozwala wybrac widoki, wspolne filtry oraz akcje ON, OFF i ukrywania filtrow.")
                             ]),
                         new RibbonStackDefinition(
                             [
@@ -48,7 +48,7 @@ namespace HCB.RevitAddin
                                     "Rename",
                                     typeof(Features.RenameViews.RenameViewsCommand),
                                     null,
-                                    "Narzedzia do zmiany nazw i numerow.",
+                                    "Narzedzia do zmiany nazw.",
                                     "Grupa narzedzi do zmiany nazw widokow, arkuszy i innych elementow.",
                                     [
                                         new RibbonPushButtonDefinition(
@@ -64,13 +64,40 @@ namespace HCB.RevitAddin
                                             "Zmienia nazwy i numery wybranych arkuszy.",
                                             "Pozwala osobno modyfikowac numer arkusza i nazwe arkusza.")
                                     ]),
-                                new RibbonPushButtonDefinition(
-                                    "HcbEstimateButton",
-                                    "Estimate",
-                                    typeof(Features.Estimate.EstimateCommand),
-                                    "Wylicza ceny jednostkowe i koszty elementow wentylacji wedlug pliku cennika.",
-                                    "Aktualizuje HC_Cena_Jednostkowa i HC_Koszt dla kanalow, ksztaltek, akcesoriow i flexow.")
-                            ])
+                                new RibbonPulldownDefinition(
+                                    "HcbNumberingPulldown",
+                                    "Numbering",
+                                    typeof(Features.ManualNumbering.ManualNumberingCommand),
+                                    null,
+                                    "Narzedzia do numeracji elementow.",
+                                    "Grupa narzedzi do recznej numeracji oraz numeracji elementow wedlug kategorii i systemow.",
+                                    [
+                                        new RibbonPushButtonDefinition(
+                                            "HcbManualNumberingButton",
+                                            "Manual Num",
+                                            typeof(Features.ManualNumbering.ManualNumberingCommand),
+                                            "Numeruje recznie wskazane elementy w kolejnosci klikanej przez uzytkownika.",
+                                            "Pozwala najpierw wybrac zestaw elementow, ustawic parametr i format numeracji, a potem wskazac kolejnosc element po elemencie."),
+                                        new RibbonPushButtonDefinition(
+                                            "HcbDuctFittingNumberingButton",
+                                            "Duct&Fit Num",
+                                            typeof(Features.DuctFittingNumbering.DuctFittingNumberingCommand),
+                                            "Numeruje kanaly i ksztaltki wedlug systemu oraz kluczy grupujacych.",
+                                            "Dla kanalow grupuje po rozmiarze i wybranej dlugosci, a dla ksztaltek po zestawie wymiarow LIN_VE i kacie."),
+                                        new RibbonPushButtonDefinition(
+                                            "HcbAccessoryTerminalNumberingButton",
+                                            "Acc&Term Num",
+                                            typeof(Features.AccessoryTerminalNumbering.AccessoryTerminalNumberingCommand),
+                                            "Numeruje akcesoria i terminale powietrzne wedlug systemu, typu i przeplywu.",
+                                            "Akcesoria dostaja numer z opcjonalnym Type Mark, a terminale numer AT.N; typy FabricAir sa pomijane.")
+                                    ])
+                            ]),
+                        new RibbonPushButtonDefinition(
+                            "HcbEstimateButton",
+                            "Estimate",
+                            typeof(Features.Estimate.EstimateCommand),
+                            "Wylicza ceny jednostkowe i koszty elementow wentylacji wedlug pliku cennika.",
+                            "Aktualizuje HC_Cena_Jednostkowa i HC_Koszt dla kanalow, ksztaltek, akcesoriow i flexow.")
                     ]),
                 new RibbonPanelDefinition(
                     "HVAC",
@@ -211,58 +238,75 @@ namespace HCB.RevitAddin
                                     typeof(Features.TransferViewTemplates.TransferViewTemplatesCommand),
                                     "Kopiuje wybrane view templates miedzy otwartymi projektami.",
                                     "Pozwala przeniesc szablony widokow i opcjonalnie nadpisac istniejace pozycje.")
-                            ])
+                            ]),
+                        new RibbonPushButtonDefinition(
+                            "HcbViewFiltersLegendButton",
+                            "Filters Legend",
+                            typeof(Features.ViewFiltersLegend.ViewFiltersLegendCommand),
+                            "Tworzy legendy dla filtrow przypisanych do wybranych widokow i szablonow.",
+                            "Generuje nowy widok legendy z probkami Surface, Cut i nazwa filtra na podstawie override filtrow.")
+                    ]),
+                new RibbonPanelDefinition(
+                    "WithoutOpen",
+                    [
+                        new RibbonPulldownDefinition(
+                            "HcbWithoutOpenPulldown",
+                            "WithoutOpen",
+                            typeof(Features.BatchFileScan.BatchFileScanCommand),
+                            null,
+                            "Narzedzia do pracy na plikach Revit bez otwierania ich w interfejsie uzytkownika.",
+                            "Grupa narzedzi do skanowania i batchowej obrobki plikow projektow i rodzin.",
+                            [
+                                new RibbonPushButtonDefinition(
+                                    "HcbBatchFileScanButton",
+                                    "Scan Files",
+                                    typeof(Features.BatchFileScan.BatchFileScanCommand),
+                                    "Skanuje wybrane pliki .rvt i .rfa bez otwierania ich w UI Revita.",
+                                    "Pokazuje podstawowe metadane plikow, wykrywa wersje, worksharing oraz kwalifikacje do dalszych operacji WithoutOpen.",
+                                    typeof(AlwaysAvailableCommandAvailability)),
+                                new RibbonPushButtonDefinition(
+                                    "HcbUnloadLinksButton",
+                                    "Unload Links",
+                                    typeof(Features.UnloadLinks.UnloadLinksCommand),
+                                    "Odlinkowuje zewnetrzne referencje w lokalnych projektach .rvt bez otwierania ich w UI Revita.",
+                                    "Wykorzystuje TransmissionData do ustawienia referencji jako niezaladowanych przy kolejnym otwarciu modelu.",
+                                    typeof(AlwaysAvailableCommandAvailability)),
+                                new RibbonPushButtonDefinition(
+                                    "HcbFamilyParameterReportButton",
+                                    "Family Report",
+                                    typeof(Features.FamilyParameterReport.FamilyParameterReportCommand),
+                                    "Odczytuje parametry rodzin .rfa przez otwarcie ich w tle, bez pokazywania w UI Revita.",
+                                    "Buduje raport CSV z nazwa parametru, shared/family, instance/type, grupa, spec type i formula.",
+                                    typeof(AlwaysAvailableCommandAvailability)),
+                                new RibbonPushButtonDefinition(
+                                    "HcbUpgradeAndCopyButton",
+                                    "Upgrade Copy",
+                                    typeof(Features.UpgradeAndCopy.UpgradeAndCopyCommand),
+                                    "Aktualizuje lokalne pliki .rvt i .rfa do wersji uruchomionego Revita i zapisuje kopie do wskazanego folderu.",
+                                    "Pomija modele chmurowe i pliki z nowszej wersji, a pliki juz aktualne po prostu kopiuje.",
+                                    typeof(AlwaysAvailableCommandAvailability)),
+                                new RibbonPushButtonDefinition(
+                                    "HcbBatchAddSharedFamilyParametersButton",
+                                    "Add Shared",
+                                    typeof(Features.BatchAddSharedFamilyParameters.BatchAddSharedFamilyParametersCommand),
+                                    "Dodaje wybrane shared parameters z wskazanego pliku do rodzin .rfa przez otwarcie ich w tle.",
+                                    "Pozwala wybrac definicje, ustawic instance/type oraz grupe parametru i zapisuje zmiany w rodzinach.",
+                                    typeof(AlwaysAvailableCommandAvailability)),
+                                new RibbonPushButtonDefinition(
+                                    "HcbRenameFamilyContentButton",
+                                    "Rename Family Params",
+                                    typeof(Features.RenameFamilyContent.RenameFamilyContentCommand),
+                                    "Zmienia nazwy parametrow rodzinnych mozliwych do edycji wedlug wspolnych regu.",
+                                    "Dziala na rodzinach .rfa otwieranych w tle i pomija parametry shared, systemowe oraz kolizje nazw.",
+                                    typeof(AlwaysAvailableCommandAvailability))
+                            ],
+                            typeof(AlwaysAvailableCommandAvailability))
                     ]),
                 new RibbonPanelDefinition(
                     "Manage",
                     [
                         new RibbonStackDefinition(
                             [
-                                new RibbonPulldownDefinition(
-                                    "HcbWithoutOpenPulldown",
-                                    "WithoutOpen",
-                                    typeof(Features.BatchFileScan.BatchFileScanCommand),
-                                    null,
-                                    "Narzedzia do pracy na plikach Revit bez otwierania ich w interfejsie uzytkownika.",
-                                    "Grupa narzedzi do skanowania i batchowej obrobki plikow projektow i rodzin.",
-                                    [
-                                        new RibbonPushButtonDefinition(
-                                            "HcbBatchFileScanButton",
-                                            "Scan Files",
-                                            typeof(Features.BatchFileScan.BatchFileScanCommand),
-                                            "Skanuje wybrane pliki .rvt i .rfa bez otwierania ich w UI Revita.",
-                                            "Pokazuje podstawowe metadane plikow, wykrywa wersje, worksharing oraz kwalifikacje do dalszych operacji WithoutOpen."),
-                                        new RibbonPushButtonDefinition(
-                                            "HcbUnloadLinksButton",
-                                            "Unload Links",
-                                            typeof(Features.UnloadLinks.UnloadLinksCommand),
-                                            "Odlinkowuje zewnetrzne referencje w lokalnych projektach .rvt bez otwierania ich w UI Revita.",
-                                            "Wykorzystuje TransmissionData do ustawienia referencji jako niezaladowanych przy kolejnym otwarciu modelu."),
-                                        new RibbonPushButtonDefinition(
-                                            "HcbFamilyParameterReportButton",
-                                            "Family Report",
-                                            typeof(Features.FamilyParameterReport.FamilyParameterReportCommand),
-                                            "Odczytuje parametry rodzin .rfa przez otwarcie ich w tle, bez pokazywania w UI Revita.",
-                                            "Buduje raport CSV z nazwa parametru, shared/family, instance/type, grupa, spec type i formula."),
-                                        new RibbonPushButtonDefinition(
-                                            "HcbUpgradeAndCopyButton",
-                                            "Upgrade Copy",
-                                            typeof(Features.UpgradeAndCopy.UpgradeAndCopyCommand),
-                                            "Aktualizuje lokalne pliki .rvt i .rfa do wersji uruchomionego Revita i zapisuje kopie do wskazanego folderu.",
-                                            "Pomija modele chmurowe i pliki z nowszej wersji, a pliki juz aktualne po prostu kopiuje."),
-                                        new RibbonPushButtonDefinition(
-                                            "HcbBatchAddSharedFamilyParametersButton",
-                                            "Add Shared",
-                                            typeof(Features.BatchAddSharedFamilyParameters.BatchAddSharedFamilyParametersCommand),
-                                            "Dodaje wybrane shared parameters z wskazanego pliku do rodzin .rfa przez otwarcie ich w tle.",
-                                            "Pozwala wybrac definicje, ustawic instance/type oraz grupe parametru i zapisuje zmiany w rodzinach."),
-                                        new RibbonPushButtonDefinition(
-                                            "HcbRenameFamilyContentButton",
-                                            "Rename Family",
-                                            typeof(Features.RenameFamilyContent.RenameFamilyContentCommand),
-                                            "Zmienia nazwy parametrow rodzinnych i typow rodzin jednoczesnie wedlug wspolnych regul.",
-                                            "Dziala na rodzinach .rfa otwieranych w tle i pomija shared parameters oraz kolizje nazw.")
-                                    ]),
                                 new RibbonPulldownDefinition(
                                     "HcbParametersPulldown",
                                     "Parameters",
@@ -283,14 +327,14 @@ namespace HCB.RevitAddin
                                     "Purge Anno",
                                     typeof(Features.PurgeAnnotations.PurgeAnnotationsCommand),
                                     "Usuwa nieuzywane style adnotacji.",
-                                    "Wyszukuje typy kategorii Annotation bez instancji i pozwala je usunac."),
-                                new RibbonPushButtonDefinition(
-                                    "HcbHCWireSizeButton",
-                                    "HC Wire",
-                                    typeof(Features.HCWireSize.HCWireSizeCommand),
-                                    "Generuje skrocony opis przewodu dla obwodow elektrycznych typu Power.",
-                                    "Nadpisuje parametr HC_WireSize na podstawie liczby zyl i przekroju odczytanego z Wire Size.")
+                                    "Wyszukuje typy kategorii Annotation bez instancji i pozwala je usunac.")
                             ]),
+                        new RibbonPushButtonDefinition(
+                            "HcbHCWireSizeButton",
+                            "HC Wire",
+                            typeof(Features.HCWireSize.HCWireSizeCommand),
+                            "Generuje skrocony opis przewodu dla obwodow elektrycznych typu Power.",
+                            "Nadpisuje parametr HC_WireSize na podstawie liczby zyl i przekroju odczytanego z Wire Size."),
                         new RibbonPushButtonDefinition(
                             "HcbRenameMaterialsButton",
                             "Materials",
@@ -315,7 +359,8 @@ namespace HCB.RevitAddin
         string Text,
         Type CommandType,
         string ToolTip,
-        string LongDescription) : RibbonStackItemDefinition;
+        string LongDescription,
+        Type? AvailabilityType = null) : RibbonStackItemDefinition;
 
     internal sealed record RibbonPulldownDefinition(
         string Name,
@@ -324,11 +369,14 @@ namespace HCB.RevitAddin
         string? IconResourceDirectory,
         string ToolTip,
         string LongDescription,
-        IReadOnlyList<RibbonPushButtonDefinition> Buttons) : RibbonStackItemDefinition;
+        IReadOnlyList<RibbonPushButtonDefinition> Buttons,
+        Type? AvailabilityType = null) : RibbonStackItemDefinition;
 
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
+
 
 
 

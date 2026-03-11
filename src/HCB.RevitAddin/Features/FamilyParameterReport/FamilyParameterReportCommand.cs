@@ -6,7 +6,11 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using HCB.RevitAddin.Features.FamilyParameterReport.Models;
+using HCB.RevitAddin.Features.RenameFamilyContent;
+using HCB.RevitAddin.Features.RenameFamilyContent.Models;
+using HCB.RevitAddin.Features.RenameFamilyContent.UI;
 using HCB.RevitAddin.Infrastructure.WithoutOpen;
+using HCB.RevitAddin.Infrastructure.WithoutOpen.Models;
 using HCB.RevitAddin.UI.Controls;
 
 namespace HCB.RevitAddin.Features.FamilyParameterReport;
@@ -33,7 +37,9 @@ public sealed class FamilyParameterReportCommand : IExternalCommand
             new() { Key = "FamilyName", Header = "Rodzina" },
             new() { Key = "ParameterName", Header = "Parametr" },
             new() { Key = "ParameterKind", Header = "Instance/Type" },
+            new() { Key = "ParameterSource", Header = "Zrodlo" },
             new() { Key = "IsShared", Header = "Shared" },
+            new() { Key = "CanRename", Header = "Mozna zmienic" },
             new() { Key = "TypeCount", Header = "Liczba typow" },
             new() { Key = "GroupTypeId", Header = "Grupa" },
             new() { Key = "SpecTypeId", Header = "SpecTypeId" },
@@ -46,7 +52,7 @@ public sealed class FamilyParameterReportCommand : IExternalCommand
             .ToList();
 
         string summary =
-            $"Rodziny zeskanowane: {familyCount} | Parametry: {result.Rows.Count} | Bledne pliki: {result.FailedFiles.Count}";
+            $"Rodziny zeskanowane: {familyCount} | Parametry: {result.Rows.Count} | Bledne pliki: {result.FailedFiles.Count} | Filtruj po rodzinie, nazwie parametru albo wartosciach typu Shared/Mozna zmienic.";
 
         ReportPreviewWindow previewWindow = new(
             "WithoutOpen - Family Report",
@@ -54,7 +60,9 @@ public sealed class FamilyParameterReportCommand : IExternalCommand
             columns,
             rows,
             "withoutopen-family-parameters.csv",
-            outputPath => service.ExportCsv(result.Rows, outputPath));
+            outputPath => service.ExportCsv(result.Rows, outputPath),
+            "Zmien nazwe",
+            row => RenameFromReportRow(commandData, row));
 
         previewWindow.ShowDialog();
         return Result.Succeeded;
@@ -68,7 +76,9 @@ public sealed class FamilyParameterReportCommand : IExternalCommand
             ["FamilyName"] = row.FamilyName,
             ["ParameterName"] = row.ParameterName,
             ["ParameterKind"] = row.IsInstance ? "Instance" : "Type",
+            ["ParameterSource"] = row.ParameterSource,
             ["IsShared"] = row.IsShared ? "Tak" : "Nie",
+            ["CanRename"] = row.CanRename ? "Tak" : "Nie",
             ["TypeCount"] = row.TypeCount.ToString(),
             ["GroupTypeId"] = row.GroupTypeId,
             ["SpecTypeId"] = row.SpecTypeId,
@@ -76,4 +86,45 @@ public sealed class FamilyParameterReportCommand : IExternalCommand
             ["FilePath"] = row.FilePath
         };
     }
+
+    private static void RenameFromReportRow(ExternalCommandData commandData, IReadOnlyDictionary<string, string> row)
+    {
+        string parameterName = row.TryGetValue("ParameterName", out string? parameterValue) ? parameterValue ?? string.Empty : string.Empty;
+        string filePath = row.TryGetValue("FilePath", out string? pathValue) ? pathValue ?? string.Empty : string.Empty;
+        bool canRename = row.TryGetValue("CanRename", out string? canRenameValue) && string.Equals(canRenameValue, "Tak", StringComparison.OrdinalIgnoreCase);
+
+        if (!canRename)
+        {
+            TaskDialog.Show("WithoutOpen - Family Report", $"Parametr '{parameterName}' jest chroniony i nie powinien byc zmieniany tym narzedziem.");
+            return;
+        }
+
+        RenameFamilyContentWindow window = new(
+            new RenameFamilyContentOptions
+            {
+                Find = parameterName,
+                Replace = parameterName,
+                SaveAsCopy = true
+            },
+            $"Przygotowano rename dla parametru '{parameterName}'. Zmien pole 'Zamien na' albo ustaw dodatkowy prefiks/sufiks.");
+
+        if (window.ShowDialog() != true)
+        {
+            return;
+        }
+
+        RenameFamilyContentService service = new();
+        RenameFamilyContentResult result = service.Rename(commandData.Application.Application, [filePath], window.Options);
+        WithoutOpenOperationLogEntry entry = result.Entries.FirstOrDefault() ?? new WithoutOpenOperationLogEntry
+        {
+            FilePath = filePath,
+            Status = Infrastructure.WithoutOpen.Models.WithoutOpenOperationStatus.Skipped,
+            Message = "Brak wyniku operacji rename."
+        };
+
+        TaskDialog.Show(
+            "WithoutOpen - Rename Family Parameters",
+            $"Plik: {Path.GetFileName(filePath)}\nStatus: {entry.Status}\nKomunikat: {entry.Message}");
+    }
 }
+

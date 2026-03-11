@@ -40,6 +40,9 @@ public sealed class FamilyParameterReportService
                 int typeCount = familyManager.Types.Size;
                 foreach (FamilyParameter parameter in familyManager.Parameters)
                 {
+                    bool isBuiltIn = IsBuiltInParameter(parameter);
+                    bool canRename = CanRenameParameter(parameter);
+
                     rows.Add(new FamilyParameterReportRow
                     {
                         FilePath = filePath,
@@ -48,6 +51,9 @@ public sealed class FamilyParameterReportService
                         ParameterName = parameter.Definition?.Name ?? string.Empty,
                         IsShared = parameter.IsShared,
                         IsInstance = parameter.IsInstance,
+                        IsBuiltIn = isBuiltIn,
+                        CanRename = canRename,
+                        ParameterSource = GetParameterSourceLabel(parameter, isBuiltIn),
                         GroupTypeId = parameter.Definition?.GetGroupTypeId()?.TypeId ?? string.Empty,
                         SpecTypeId = parameter.Definition?.GetDataType()?.TypeId ?? string.Empty,
                         Formula = parameter.Formula ?? string.Empty
@@ -77,7 +83,7 @@ public sealed class FamilyParameterReportService
     public void ExportCsv(IEnumerable<FamilyParameterReportRow> rows, string outputPath)
     {
         StringBuilder builder = new();
-        builder.AppendLine("FilePath,FamilyName,TypeCount,ParameterName,IsShared,IsInstance,GroupTypeId,SpecTypeId,Formula");
+        builder.AppendLine("FilePath,FamilyName,TypeCount,ParameterName,ParameterSource,IsShared,IsInstance,IsBuiltIn,CanRename,GroupTypeId,SpecTypeId,Formula");
 
         foreach (FamilyParameterReportRow row in rows)
         {
@@ -86,14 +92,43 @@ public sealed class FamilyParameterReportService
                 Escape(row.FamilyName),
                 row.TypeCount.ToString(CultureInfo.InvariantCulture),
                 Escape(row.ParameterName),
+                Escape(row.ParameterSource),
                 row.IsShared.ToString(),
                 row.IsInstance.ToString(),
+                row.IsBuiltIn.ToString(),
+                row.CanRename.ToString(),
                 Escape(row.GroupTypeId),
                 Escape(row.SpecTypeId),
                 Escape(row.Formula)));
         }
 
         File.WriteAllText(outputPath, builder.ToString(), Encoding.UTF8);
+    }
+
+    private static bool CanRenameParameter(FamilyParameter parameter)
+    {
+        return !parameter.IsShared && !IsBuiltInParameter(parameter);
+    }
+
+    private static bool IsBuiltInParameter(FamilyParameter parameter)
+    {
+        return parameter.Definition is InternalDefinition internalDefinition &&
+               internalDefinition.BuiltInParameter != BuiltInParameter.INVALID;
+    }
+
+    private static string GetParameterSourceLabel(FamilyParameter parameter, bool isBuiltIn)
+    {
+        if (parameter.IsShared)
+        {
+            return "Shared";
+        }
+
+        if (isBuiltIn)
+        {
+            return "System";
+        }
+
+        return "Family";
     }
 
     private static string Escape(string? value)

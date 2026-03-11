@@ -6,10 +6,21 @@ namespace HCB.RevitAddin.Features.RenameFamilyContent.UI;
 
 public partial class RenameFamilyContentWindow : Window
 {
-    public RenameFamilyContentWindow()
+    public RenameFamilyContentWindow(RenameFamilyContentOptions? initialOptions = null, string? statusText = null)
     {
         InitializeComponent();
-        FooterBar.StatusText = "Reguly beda zastosowane jednoczesnie do parametrow rodzinnych i typow.";
+
+        PrefixTextBox.Text = initialOptions?.Prefix ?? string.Empty;
+        FindTextBox.Text = initialOptions?.Find ?? string.Empty;
+        ReplaceTextBox.Text = initialOptions?.Replace ?? string.Empty;
+        SuffixTextBox.Text = initialOptions?.Suffix ?? string.Empty;
+        SaveAsCopyCheckBox.IsChecked = initialOptions?.SaveAsCopy ?? true;
+        OutputFolderTextBox.Text = initialOptions?.OutputFolderPath ?? string.Empty;
+
+        FooterBar.StatusText = string.IsNullOrWhiteSpace(statusText)
+            ? "Reguly beda zastosowane do parametrow rodzinnych mozliwych do zmiany nazwy."
+            : statusText;
+
         UpdateOutputFolderState();
     }
 
@@ -26,7 +37,7 @@ public partial class RenameFamilyContentWindow : Window
     private void BrowseOutputFolderButton_OnClick(object sender, RoutedEventArgs e)
     {
         WithoutOpenDialogService dialogService = new();
-        string? folderPath = dialogService.PickFolderPath("Wybierz folder docelowy dla kopii rodzin po zmianie nazw.");
+        string? folderPath = dialogService.PickFolderPath("Wybierz folder docelowy dla kopii rodzin po zmianie nazw parametrow.");
         if (!string.IsNullOrWhiteSpace(folderPath))
         {
             OutputFolderTextBox.Text = folderPath;

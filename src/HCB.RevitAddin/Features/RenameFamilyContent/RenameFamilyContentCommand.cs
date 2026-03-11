@@ -37,6 +37,7 @@ public sealed class RenameFamilyContentCommand : IExternalCommand
             new() { Key = "FileName", Header = "Plik" },
             new() { Key = "Status", Header = "Status" },
             new() { Key = "Message", Header = "Komunikat" },
+            new() { Key = "OutputPath", Header = "Plik wynikowy" },
             new() { Key = "Duration", Header = "Czas [s]" },
             new() { Key = "FilePath", Header = "Sciezka" }
         ];
@@ -49,11 +50,11 @@ public sealed class RenameFamilyContentCommand : IExternalCommand
             $"Pliki: {result.Entries.Count} | Sukces: {result.SuccessCount} | Pominiete: {result.SkippedCount} | Bledy: {result.FailedCount}";
 
         ReportPreviewWindow previewWindow = new(
-            "WithoutOpen - Rename Family",
+            "WithoutOpen - Rename Family Parameters",
             summary,
             columns,
             rows,
-            "withoutopen-rename-family.csv",
+            "withoutopen-rename-family-parameters.csv",
             outputPath =>
             {
                 WithoutOpenBatchLogService logService = new();
@@ -71,6 +72,7 @@ public sealed class RenameFamilyContentCommand : IExternalCommand
             ["FileName"] = Path.GetFileName(entry.FilePath),
             ["Status"] = entry.Status.ToString(),
             ["Message"] = entry.Message,
+            ["OutputPath"] = entry.OutputPath,
             ["Duration"] = entry.Duration.TotalSeconds.ToString("0.###"),
             ["FilePath"] = entry.FilePath
         };

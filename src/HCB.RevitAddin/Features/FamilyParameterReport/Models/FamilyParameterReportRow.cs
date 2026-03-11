@@ -14,6 +14,12 @@ public sealed class FamilyParameterReportRow
 
     public bool IsInstance { get; init; }
 
+    public bool IsBuiltIn { get; init; }
+
+    public bool CanRename { get; init; }
+
+    public string ParameterSource { get; init; } = string.Empty;
+
     public string GroupTypeId { get; init; } = string.Empty;
 
     public string SpecTypeId { get; init; } = string.Empty;

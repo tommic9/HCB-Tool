@@ -19,6 +19,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -36,26 +37,45 @@
 
         <TextBlock x:Name="SummaryTextBlock"
                    Grid.Row="1"
-                   Margin="0,12,0,12"
+                   Margin="0,12,0,8"
                    Style="{StaticResource StatusTextStyle}"
                    TextWrapping="Wrap" />
 
+        <DockPanel Grid.Row="2"
+                   Margin="0,0,0,12">
+            <TextBlock Text="Filtr"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0" />
+            <TextBox x:Name="SearchTextBox"
+                     MinWidth="260"
+                     TextChanged="SearchTextBox_OnTextChanged" />
+        </DockPanel>
+
         <DataGrid x:Name="ReportDataGrid"
-                  Grid.Row="2"
+                  Grid.Row="3"
                   AutoGenerateColumns="True"
                   IsReadOnly="True"
                   HeadersVisibility="Column"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   SelectionMode="Extended"
+                  SelectionChanged="ReportDataGrid_OnSelectionChanged"
+                  MouseDoubleClick="ReportDataGrid_OnMouseDoubleClick"
                   GridLinesVisibility="Horizontal"
                   RowHeaderWidth="0" />
 
-        <DockPanel Grid.Row="3"
+        <DockPanel Grid.Row="4"
                    Margin="0,16,0,0">
             <TextBlock x:Name="RowsCountTextBlock"
                        Style="{StaticResource StatusTextStyle}"
                        VerticalAlignment="Center" />
+            <Button x:Name="RowActionButton"
+                    Width="140"
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
+                    DockPanel.Dock="Right"
+                    Visibility="Collapsed"
+                    Click="RowActionButton_OnClick" />
             <Button Width="96"
                     Content="Zamknij"
                     HorizontalAlignment="Right"

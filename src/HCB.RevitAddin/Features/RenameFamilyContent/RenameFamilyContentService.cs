@@ -55,9 +55,9 @@ public sealed class RenameFamilyContentService
 
                 FamilyManager familyManager = document.FamilyManager;
                 int renamedParameters = 0;
-                int renamedTypes = 0;
+                int protectedParameters = 0;
 
-                using Transaction transaction = new(document, "Rename Family Content");
+                using Transaction transaction = new(document, "Rename Family Parameters");
                 transaction.Start();
 
                 HashSet<string> parameterNames = familyManager.Parameters
@@ -67,8 +67,9 @@ public sealed class RenameFamilyContentService
 
                 foreach (FamilyParameter parameter in familyManager.Parameters)
                 {
-                    if (parameter.IsShared)
+                    if (!CanRenameParameter(parameter))
                     {
+                        protectedParameters++;
                         continue;
                     }
 
@@ -90,41 +91,18 @@ public sealed class RenameFamilyContentService
                     renamedParameters++;
                 }
 
-                HashSet<string> typeNames = familyManager.Types
-                    .Cast<FamilyType>()
-                    .Select(type => type.Name)
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-                foreach (FamilyType familyType in familyManager.Types)
-                {
-                    string currentName = familyType.Name;
-                    string targetName = ApplyRenameRule(currentName, options);
-                    if (string.IsNullOrWhiteSpace(targetName) || string.Equals(currentName, targetName, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    if (typeNames.Contains(targetName))
-                    {
-                        continue;
-                    }
-
-                    familyManager.CurrentType = familyType;
-                    familyManager.RenameCurrentType(targetName);
-                    typeNames.Remove(currentName);
-                    typeNames.Add(targetName);
-                    renamedTypes++;
-                }
-
                 transaction.Commit();
 
-                if (renamedParameters == 0 && renamedTypes == 0)
+                if (renamedParameters == 0)
                 {
-                    return CreateLog(familyPath, WithoutOpenOperationStatus.Skipped, "Brak zmian do zapisania.", startedAt);
+                    string message = protectedParameters > 0
+                        ? $"Brak zmian do zapisania. Pominieto parametry chronione: {protectedParameters}."
+                        : "Brak zmian do zapisania.";
+                    return CreateLog(familyPath, WithoutOpenOperationStatus.Skipped, message, startedAt);
                 }
 
                 string savedPath = SaveFamily(document, familyPath, options);
-                return CreateLog(familyPath, WithoutOpenOperationStatus.Success, $"Zmieniono parametry: {renamedParameters}, typy: {renamedTypes}. Zapis: {savedPath}", startedAt);
+                return CreateLog(familyPath, WithoutOpenOperationStatus.Success, $"Zmieniono parametry: {renamedParameters}. Pominieto chronione: {protectedParameters}. Zapis: {savedPath}", startedAt, savedPath);
             }
             finally
             {
@@ -138,6 +116,17 @@ public sealed class RenameFamilyContentService
         {
             return CreateLog(familyPath, WithoutOpenOperationStatus.Failed, exception.Message, startedAt);
         }
+    }
+
+    private static bool CanRenameParameter(FamilyParameter parameter)
+    {
+        return !parameter.IsShared && !IsBuiltInParameter(parameter);
+    }
+
+    private static bool IsBuiltInParameter(FamilyParameter parameter)
+    {
+        return parameter.Definition is InternalDefinition internalDefinition &&
+               internalDefinition.BuiltInParameter != BuiltInParameter.INVALID;
     }
 
     private static string SaveFamily(Document document, string sourcePath, RenameFamilyContentOptions options)
@@ -171,14 +160,15 @@ public sealed class RenameFamilyContentService
         return renamed.Trim();
     }
 
-    private static WithoutOpenOperationLogEntry CreateLog(string filePath, WithoutOpenOperationStatus status, string message, DateTime startedAt)
+    private static WithoutOpenOperationLogEntry CreateLog(string filePath, WithoutOpenOperationStatus status, string message, DateTime startedAt, string outputPath = "")
     {
         return new WithoutOpenOperationLogEntry
         {
             FilePath = filePath,
-            OperationName = "Rename Family Content",
+            OperationName = "Rename Family Parameters",
             Status = status,
             Message = message,
+            OutputPath = outputPath,
             Duration = DateTime.UtcNow - startedAt
         };
     }
