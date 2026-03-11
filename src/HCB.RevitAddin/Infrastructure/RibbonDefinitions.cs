@@ -249,7 +249,13 @@ namespace HCB.RevitAddin
                                             "Upgrade Copy",
                                             typeof(Features.UpgradeAndCopy.UpgradeAndCopyCommand),
                                             "Aktualizuje lokalne pliki .rvt i .rfa do wersji uruchomionego Revita i zapisuje kopie do wskazanego folderu.",
-                                            "Pomija modele chmurowe i pliki z nowszej wersji, a pliki juz aktualne po prostu kopiuje.")
+                                            "Pomija modele chmurowe i pliki z nowszej wersji, a pliki juz aktualne po prostu kopiuje."),
+                                        new RibbonPushButtonDefinition(
+                                            "HcbBatchAddSharedFamilyParametersButton",
+                                            "Add Shared",
+                                            typeof(Features.BatchAddSharedFamilyParameters.BatchAddSharedFamilyParametersCommand),
+                                            "Dodaje wybrane shared parameters z wskazanego pliku do rodzin .rfa przez otwarcie ich w tle.",
+                                            "Pozwala wybrac definicje, ustawic instance/type oraz grupe parametru i zapisuje zmiany w rodzinach.")
                                     ]),
                                 new RibbonPulldownDefinition(
                                     "HcbParametersPulldown",
@@ -317,6 +323,7 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
 
 
 

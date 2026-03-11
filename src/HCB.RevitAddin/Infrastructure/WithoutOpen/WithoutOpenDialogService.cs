@@ -21,6 +21,21 @@ public sealed class WithoutOpenDialogService
             : [];
     }
 
+    public string? PickSharedParameterFile()
+    {
+        Microsoft.Win32.OpenFileDialog dialog = new()
+        {
+            Title = "Wybierz plik Shared Parameters",
+            Filter = "Shared Parameters (*.txt)|*.txt|Wszystkie pliki (*.*)|*.*",
+            Multiselect = false,
+            CheckFileExists = true
+        };
+
+        return dialog.ShowDialog() == true
+            ? dialog.FileName
+            : null;
+    }
+
     public string? PickFolderPath(string description)
     {
         using Forms.FolderBrowserDialog dialog = new()
@@ -52,3 +67,4 @@ public sealed class WithoutOpenDialogService
             : null;
     }
 }
+

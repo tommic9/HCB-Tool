@@ -75,6 +75,13 @@
     <Compile Include="Features\UpgradeAndCopy\UpgradeAndCopyCommand.cs" />
     <Compile Include="Features\UpgradeAndCopy\UpgradeAndCopyService.cs" />
     <Compile Include="Features\UpgradeAndCopy\Models\UpgradeAndCopyResult.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\BatchAddSharedFamilyParametersCommand.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\BatchAddSharedFamilyParametersService.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\Models\BatchAddSharedFamilyParametersOptions.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\Models\BatchAddSharedFamilyParametersResult.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\Models\FamilyParameterGroupOption.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\Models\SharedParameterDefinitionItem.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\UI\BatchAddSharedFamilyParametersWindow.xaml.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
     <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
@@ -201,6 +208,7 @@
     <Page Include="Features\TransferViewTemplates\UI\TransferViewTemplatesWindow.xaml" />
     <Page Include="Features\ViewFiltersBulkEdit\UI\ViewFiltersBulkEditWindow.xaml" />
     <Page Include="Features\ViewsDuplicate\UI\ViewsDuplicateWindow.xaml" />
+    <Page Include="Features\BatchAddSharedFamilyParameters\UI\BatchAddSharedFamilyParametersWindow.xaml" />
     <Compile Include="UI\Controls\DialogFooterBar.xaml.cs" />
     <Page Include="UI\Controls\DialogFooterBar.xaml" />
     <Compile Include="UI\Controls\ColorSelectionItem.cs" />
@@ -242,6 +250,7 @@
 
   </Target>
 </Project>
+
 
 
 
