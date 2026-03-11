@@ -39,10 +39,27 @@ public sealed class WithoutOpenBatchLogService
         File.WriteAllText(outputPath, builder.ToString(), Encoding.UTF8);
     }
 
+    public void ExportOperationsToCsv(IEnumerable<WithoutOpenOperationLogEntry> entries, string outputPath)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("FilePath,OperationName,Status,Message,DurationSeconds");
+
+        foreach (WithoutOpenOperationLogEntry entry in entries)
+        {
+            builder.AppendLine(string.Join(",",
+                Escape(entry.FilePath),
+                Escape(entry.OperationName),
+                Escape(entry.Status.ToString()),
+                Escape(entry.Message),
+                entry.Duration.TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture)));
+        }
+
+        File.WriteAllText(outputPath, builder.ToString(), Encoding.UTF8);
+    }
+
     private static string Escape(string? value)
     {
         string normalized = value ?? string.Empty;
         return $"\"{normalized.Replace("\"", "\"\"")}\"";
     }
 }
-

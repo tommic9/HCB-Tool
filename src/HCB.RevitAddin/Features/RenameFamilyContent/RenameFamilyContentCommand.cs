@@ -1,8 +1,13 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using HCB.RevitAddin.Features.RenameFamilyContent.UI;
 using HCB.RevitAddin.Infrastructure.WithoutOpen;
+using HCB.RevitAddin.Infrastructure.WithoutOpen.Models;
+using HCB.RevitAddin.UI.Controls;
 
 namespace HCB.RevitAddin.Features.RenameFamilyContent;
 
@@ -27,14 +32,47 @@ public sealed class RenameFamilyContentCommand : IExternalCommand
         RenameFamilyContentService service = new();
         var result = service.Rename(commandData.Application.Application, familyPaths, window.Options);
 
-        TaskDialog.Show(
-            "WithoutOpen - Rename Family",
-            $"Pliki: {result.Entries.Count}\n" +
-            $"Sukces: {result.SuccessCount}\n" +
-            $"Pominiete: {result.SkippedCount}\n" +
-            $"Bledy: {result.FailedCount}\n\n" +
-            $"{string.Join("\n", result.Entries.Take(12).Select(entry => $"{Path.GetFileName(entry.FilePath)} | {entry.Status} | {entry.Message}"))}");
+        List<ReportPreviewColumn> columns =
+        [
+            new() { Key = "FileName", Header = "Plik" },
+            new() { Key = "Status", Header = "Status" },
+            new() { Key = "Message", Header = "Komunikat" },
+            new() { Key = "Duration", Header = "Czas [s]" },
+            new() { Key = "FilePath", Header = "Sciezka" }
+        ];
 
+        IReadOnlyList<IReadOnlyDictionary<string, string>> rows = result.Entries
+            .Select(ToRow)
+            .ToList();
+
+        string summary =
+            $"Pliki: {result.Entries.Count} | Sukces: {result.SuccessCount} | Pominiete: {result.SkippedCount} | Bledy: {result.FailedCount}";
+
+        ReportPreviewWindow previewWindow = new(
+            "WithoutOpen - Rename Family",
+            summary,
+            columns,
+            rows,
+            "withoutopen-rename-family.csv",
+            outputPath =>
+            {
+                WithoutOpenBatchLogService logService = new();
+                logService.ExportOperationsToCsv(result.Entries, outputPath);
+            });
+
+        previewWindow.ShowDialog();
         return Result.Succeeded;
+    }
+
+    private static IReadOnlyDictionary<string, string> ToRow(WithoutOpenOperationLogEntry entry)
+    {
+        return new Dictionary<string, string>
+        {
+            ["FileName"] = Path.GetFileName(entry.FilePath),
+            ["Status"] = entry.Status.ToString(),
+            ["Message"] = entry.Message,
+            ["Duration"] = entry.Duration.TotalSeconds.ToString("0.###"),
+            ["FilePath"] = entry.FilePath
+        };
     }
 }

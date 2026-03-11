@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB;
 using HCB.RevitAddin.Features.UpgradeAndCopy.Models;
@@ -9,6 +10,8 @@ namespace HCB.RevitAddin.Features.UpgradeAndCopy;
 
 public sealed class UpgradeAndCopyService
 {
+    private static readonly Regex ExistingRevitSuffixRegex = new(@"(?:[_\- ]?R\d{2})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private readonly WithoutOpenFileDiscoveryService _fileDiscoveryService = new();
     private readonly WithoutOpenFileMetadataService _fileMetadataService = new();
     private readonly WithoutOpenDocumentService _documentService = new();
@@ -105,13 +108,9 @@ public sealed class UpgradeAndCopyService
         string extension = Path.GetExtension(sourcePath);
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourcePath);
         string suffix = GetRevitSuffix(application);
+        string baseName = ExistingRevitSuffixRegex.Replace(fileNameWithoutExtension, string.Empty);
 
-        if (!fileNameWithoutExtension.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-        {
-            fileNameWithoutExtension += suffix;
-        }
-
-        return Path.Combine(outputFolderPath, fileNameWithoutExtension + extension);
+        return Path.Combine(outputFolderPath, baseName + suffix + extension);
     }
 
     private static string GetRevitSuffix(Application application)

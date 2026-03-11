@@ -1,8 +1,13 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using HCB.RevitAddin.Features.BatchAddSharedFamilyParameters.UI;
 using HCB.RevitAddin.Infrastructure.WithoutOpen;
+using HCB.RevitAddin.Infrastructure.WithoutOpen.Models;
+using HCB.RevitAddin.UI.Controls;
 
 namespace HCB.RevitAddin.Features.BatchAddSharedFamilyParameters;
 
@@ -39,14 +44,48 @@ public sealed class BatchAddSharedFamilyParametersCommand : IExternalCommand
         }
 
         var result = service.AddParameters(commandData.Application.Application, familyPaths, sharedParameterFilePath, window.Options);
-        TaskDialog.Show(
-            "WithoutOpen - Add Shared",
-            $"Pliki: {result.Entries.Count}\n" +
-            $"Sukces: {result.SuccessCount}\n" +
-            $"Pominiete: {result.SkippedCount}\n" +
-            $"Bledy: {result.FailedCount}\n\n" +
-            $"{string.Join("\n", result.Entries.Take(12).Select(entry => $"{Path.GetFileName(entry.FilePath)} | {entry.Status} | {entry.Message}"))}");
 
+        List<ReportPreviewColumn> columns =
+        [
+            new() { Key = "FileName", Header = "Plik" },
+            new() { Key = "Status", Header = "Status" },
+            new() { Key = "Message", Header = "Komunikat" },
+            new() { Key = "Duration", Header = "Czas [s]" },
+            new() { Key = "FilePath", Header = "Sciezka" }
+        ];
+
+        IReadOnlyList<IReadOnlyDictionary<string, string>> rows = result.Entries
+            .Select(ToRow)
+            .ToList();
+
+        string summary =
+            $"Pliki: {result.Entries.Count} | Sukces: {result.SuccessCount} | Pominiete: {result.SkippedCount} | Bledy: {result.FailedCount}";
+
+        ReportPreviewWindow previewWindow = new(
+            "WithoutOpen - Add Shared",
+            summary,
+            columns,
+            rows,
+            "withoutopen-add-shared.csv",
+            outputPath =>
+            {
+                WithoutOpenBatchLogService logService = new();
+                logService.ExportOperationsToCsv(result.Entries, outputPath);
+            });
+
+        previewWindow.ShowDialog();
         return Result.Succeeded;
+    }
+
+    private static IReadOnlyDictionary<string, string> ToRow(WithoutOpenOperationLogEntry entry)
+    {
+        return new Dictionary<string, string>
+        {
+            ["FileName"] = Path.GetFileName(entry.FilePath),
+            ["Status"] = entry.Status.ToString(),
+            ["Message"] = entry.Message,
+            ["Duration"] = entry.Duration.TotalSeconds.ToString("0.###"),
+            ["FilePath"] = entry.FilePath
+        };
     }
 }
