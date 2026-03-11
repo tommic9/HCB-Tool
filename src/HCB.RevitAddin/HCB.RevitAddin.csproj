@@ -64,6 +64,9 @@
     <Compile Include="Features\BatchFileScan\BatchFileScanCommand.cs" />
     <Compile Include="Features\BatchFileScan\BatchFileScanService.cs" />
     <Compile Include="Features\BatchFileScan\Models\BatchFileScanResult.cs" />
+    <Compile Include="Features\UnloadLinks\UnloadLinksCommand.cs" />
+    <Compile Include="Features\UnloadLinks\UnloadLinksService.cs" />
+    <Compile Include="Features\UnloadLinks\Models\UnloadLinksResult.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
     <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
@@ -175,6 +178,7 @@
     <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileClassifier.cs" />
     <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileDiscoveryService.cs" />
     <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileMetadataService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenTransmissionDataService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Page Include="Features\CopyFilters\UI\CopyFiltersWindow.xaml" />
     <Page Include="Features\ColorVentSystems\UI\ColorSetSystemsOptionsWindow.xaml" />
@@ -229,5 +233,6 @@
 
   </Target>
 </Project>
+
 
 

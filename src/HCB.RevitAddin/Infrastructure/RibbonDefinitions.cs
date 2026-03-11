@@ -231,7 +231,13 @@ namespace HCB.RevitAddin
                                             "Scan Files",
                                             typeof(Features.BatchFileScan.BatchFileScanCommand),
                                             "Skanuje wybrane pliki .rvt i .rfa bez otwierania ich w UI Revita.",
-                                            "Pokazuje podstawowe metadane plikow, wykrywa wersje, worksharing oraz kwalifikacje do dalszych operacji WithoutOpen.")
+                                            "Pokazuje podstawowe metadane plikow, wykrywa wersje, worksharing oraz kwalifikacje do dalszych operacji WithoutOpen."),
+                                        new RibbonPushButtonDefinition(
+                                            "HcbUnloadLinksButton",
+                                            "Unload Links",
+                                            typeof(Features.UnloadLinks.UnloadLinksCommand),
+                                            "Odlinkowuje zewnetrzne referencje w lokalnych projektach .rvt bez otwierania ich w UI Revita.",
+                                            "Wykorzystuje TransmissionData do ustawienia referencji jako niezaladowanych przy kolejnym otwarciu modelu.")
                                     ]),
                                 new RibbonPulldownDefinition(
                                     "HcbParametersPulldown",
@@ -299,4 +305,5 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
 
