@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configurations>Debug R25;Debug R25 Deploy;Debug R26;Debug R26 Deploy;Release R25;Release R26</Configurations>
     <RevitVersion Condition="'$(RevitVersion)' == '' and $(Configuration.Contains('R25'))">2025</RevitVersion>
@@ -60,6 +60,10 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Compile Include="App.cs" />
+    <Compile Include="GlobalUsings.cs" />
+    <Compile Include="Features\BatchFileScan\BatchFileScanCommand.cs" />
+    <Compile Include="Features\BatchFileScan\BatchFileScanService.cs" />
+    <Compile Include="Features\BatchFileScan\Models\BatchFileScanResult.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
     <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
@@ -162,6 +166,15 @@
     <Compile Include="Infrastructure\RibbonDefinitions.cs" />
     <Compile Include="Infrastructure\RibbonBuilder.cs" />
     <Compile Include="Infrastructure\RibbonIconResolver.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenFileKind.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenFileScanItem.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenOperationLogEntry.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenOperationStatus.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenBatchLogService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenDialogService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileClassifier.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileDiscoveryService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileMetadataService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Page Include="Features\CopyFilters\UI\CopyFiltersWindow.xaml" />
     <Page Include="Features\ColorVentSystems\UI\ColorSetSystemsOptionsWindow.xaml" />
@@ -216,4 +229,5 @@
 
   </Target>
 </Project>
+
 

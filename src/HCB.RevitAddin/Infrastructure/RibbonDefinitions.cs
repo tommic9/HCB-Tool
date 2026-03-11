@@ -219,6 +219,21 @@ namespace HCB.RevitAddin
                         new RibbonStackDefinition(
                             [
                                 new RibbonPulldownDefinition(
+                                    "HcbWithoutOpenPulldown",
+                                    "WithoutOpen",
+                                    typeof(Features.BatchFileScan.BatchFileScanCommand),
+                                    null,
+                                    "Narzedzia do pracy na plikach Revit bez otwierania ich w interfejsie uzytkownika.",
+                                    "Grupa narzedzi do skanowania i batchowej obrobki plikow projektow i rodzin.",
+                                    [
+                                        new RibbonPushButtonDefinition(
+                                            "HcbBatchFileScanButton",
+                                            "Scan Files",
+                                            typeof(Features.BatchFileScan.BatchFileScanCommand),
+                                            "Skanuje wybrane pliki .rvt i .rfa bez otwierania ich w UI Revita.",
+                                            "Pokazuje podstawowe metadane plikow, wykrywa wersje, worksharing oraz kwalifikacje do dalszych operacji WithoutOpen.")
+                                    ]),
+                                new RibbonPulldownDefinition(
                                     "HcbParametersPulldown",
                                     "Parameters",
                                     typeof(Features.SharedParameters.SharedParametersCommand),
@@ -284,3 +299,4 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
