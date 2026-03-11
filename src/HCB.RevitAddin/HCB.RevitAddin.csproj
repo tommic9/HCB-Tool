@@ -67,6 +67,10 @@
     <Compile Include="Features\UnloadLinks\UnloadLinksCommand.cs" />
     <Compile Include="Features\UnloadLinks\UnloadLinksService.cs" />
     <Compile Include="Features\UnloadLinks\Models\UnloadLinksResult.cs" />
+    <Compile Include="Features\FamilyParameterReport\FamilyParameterReportCommand.cs" />
+    <Compile Include="Features\FamilyParameterReport\FamilyParameterReportService.cs" />
+    <Compile Include="Features\FamilyParameterReport\Models\FamilyParameterReportResult.cs" />
+    <Compile Include="Features\FamilyParameterReport\Models\FamilyParameterReportRow.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
     <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
@@ -174,6 +178,7 @@
     <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenOperationLogEntry.cs" />
     <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenOperationStatus.cs" />
     <Compile Include="Infrastructure\WithoutOpen\WithoutOpenBatchLogService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenDocumentService.cs" />
     <Compile Include="Infrastructure\WithoutOpen\WithoutOpenDialogService.cs" />
     <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileClassifier.cs" />
     <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileDiscoveryService.cs" />
@@ -233,6 +238,7 @@
 
   </Target>
 </Project>
+
 
 
 

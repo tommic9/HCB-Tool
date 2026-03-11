@@ -237,7 +237,13 @@ namespace HCB.RevitAddin
                                             "Unload Links",
                                             typeof(Features.UnloadLinks.UnloadLinksCommand),
                                             "Odlinkowuje zewnetrzne referencje w lokalnych projektach .rvt bez otwierania ich w UI Revita.",
-                                            "Wykorzystuje TransmissionData do ustawienia referencji jako niezaladowanych przy kolejnym otwarciu modelu.")
+                                            "Wykorzystuje TransmissionData do ustawienia referencji jako niezaladowanych przy kolejnym otwarciu modelu."),
+                                        new RibbonPushButtonDefinition(
+                                            "HcbFamilyParameterReportButton",
+                                            "Family Report",
+                                            typeof(Features.FamilyParameterReport.FamilyParameterReportCommand),
+                                            "Odczytuje parametry rodzin .rfa przez otwarcie ich w tle, bez pokazywania w UI Revita.",
+                                            "Buduje raport CSV z nazwa parametru, shared/family, instance/type, grupa, spec type i formula.")
                                     ]),
                                 new RibbonPulldownDefinition(
                                     "HcbParametersPulldown",
@@ -305,5 +311,6 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
 
 
