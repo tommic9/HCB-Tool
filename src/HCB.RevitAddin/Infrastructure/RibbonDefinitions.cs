@@ -255,7 +255,13 @@ namespace HCB.RevitAddin
                                             "Add Shared",
                                             typeof(Features.BatchAddSharedFamilyParameters.BatchAddSharedFamilyParametersCommand),
                                             "Dodaje wybrane shared parameters z wskazanego pliku do rodzin .rfa przez otwarcie ich w tle.",
-                                            "Pozwala wybrac definicje, ustawic instance/type oraz grupe parametru i zapisuje zmiany w rodzinach.")
+                                            "Pozwala wybrac definicje, ustawic instance/type oraz grupe parametru i zapisuje zmiany w rodzinach."),
+                                        new RibbonPushButtonDefinition(
+                                            "HcbRenameFamilyContentButton",
+                                            "Rename Family",
+                                            typeof(Features.RenameFamilyContent.RenameFamilyContentCommand),
+                                            "Zmienia nazwy parametrow rodzinnych i typow rodzin jednoczesnie wedlug wspolnych regul.",
+                                            "Dziala na rodzinach .rfa otwieranych w tle i pomija shared parameters oraz kolizje nazw.")
                                     ]),
                                 new RibbonPulldownDefinition(
                                     "HcbParametersPulldown",
@@ -323,6 +329,7 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
 
 
 

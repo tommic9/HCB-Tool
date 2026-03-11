@@ -82,6 +82,9 @@
     <Compile Include="Features\BatchAddSharedFamilyParameters\Models\FamilyParameterGroupOption.cs" />
     <Compile Include="Features\BatchAddSharedFamilyParameters\Models\SharedParameterDefinitionItem.cs" />
     <Compile Include="Features\BatchAddSharedFamilyParameters\UI\BatchAddSharedFamilyParametersWindow.xaml.cs" />
+    <Compile Include="Features\RenameFamilyContent\RenameFamilyContentCommand.cs" />
+    <Compile Include="Features\RenameFamilyContent\RenameFamilyContentService.cs" />
+    <Compile Include="Features\RenameFamilyContent\Models\RenameFamilyContentResult.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
     <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
@@ -250,6 +253,7 @@
 
   </Target>
 </Project>
+
 
 
 
