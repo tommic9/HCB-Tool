@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.Win32;
+using Forms = System.Windows.Forms;
 
 namespace HCB.RevitAddin.Infrastructure.WithoutOpen;
 
@@ -7,7 +8,7 @@ public sealed class WithoutOpenDialogService
 {
     public IReadOnlyList<string> PickRevitFiles()
     {
-        OpenFileDialog dialog = new()
+        Microsoft.Win32.OpenFileDialog dialog = new()
         {
             Title = "Wybierz pliki Revit",
             Filter = "Pliki Revit (*.rvt;*.rfa)|*.rvt;*.rfa|Projekty (*.rvt)|*.rvt|Rodziny (*.rfa)|*.rfa|Wszystkie pliki (*.*)|*.*",
@@ -20,9 +21,23 @@ public sealed class WithoutOpenDialogService
             : [];
     }
 
+    public string? PickFolderPath(string description)
+    {
+        using Forms.FolderBrowserDialog dialog = new()
+        {
+            Description = description,
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = true
+        };
+
+        return dialog.ShowDialog() == Forms.DialogResult.OK
+            ? dialog.SelectedPath
+            : null;
+    }
+
     public string? PickCsvOutputPath(string suggestedFileName)
     {
-        SaveFileDialog dialog = new()
+        Microsoft.Win32.SaveFileDialog dialog = new()
         {
             Title = "Zapisz raport CSV",
             Filter = "CSV (*.csv)|*.csv",
@@ -37,4 +52,3 @@ public sealed class WithoutOpenDialogService
             : null;
     }
 }
-

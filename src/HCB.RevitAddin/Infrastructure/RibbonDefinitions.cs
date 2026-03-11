@@ -243,7 +243,13 @@ namespace HCB.RevitAddin
                                             "Family Report",
                                             typeof(Features.FamilyParameterReport.FamilyParameterReportCommand),
                                             "Odczytuje parametry rodzin .rfa przez otwarcie ich w tle, bez pokazywania w UI Revita.",
-                                            "Buduje raport CSV z nazwa parametru, shared/family, instance/type, grupa, spec type i formula.")
+                                            "Buduje raport CSV z nazwa parametru, shared/family, instance/type, grupa, spec type i formula."),
+                                        new RibbonPushButtonDefinition(
+                                            "HcbUpgradeAndCopyButton",
+                                            "Upgrade Copy",
+                                            typeof(Features.UpgradeAndCopy.UpgradeAndCopyCommand),
+                                            "Aktualizuje lokalne pliki .rvt i .rfa do wersji uruchomionego Revita i zapisuje kopie do wskazanego folderu.",
+                                            "Pomija modele chmurowe i pliki z nowszej wersji, a pliki juz aktualne po prostu kopiuje.")
                                     ]),
                                 new RibbonPulldownDefinition(
                                     "HcbParametersPulldown",
@@ -311,6 +317,7 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
 
 
 

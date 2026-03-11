@@ -8,6 +8,7 @@
     <RevitAddinsDir>$(AppData)\Autodesk\Revit\Addins\$(RevitVersion)</RevitAddinsDir>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultPageItems>false</EnableDefaultPageItems>
@@ -71,6 +72,9 @@
     <Compile Include="Features\FamilyParameterReport\FamilyParameterReportService.cs" />
     <Compile Include="Features\FamilyParameterReport\Models\FamilyParameterReportResult.cs" />
     <Compile Include="Features\FamilyParameterReport\Models\FamilyParameterReportRow.cs" />
+    <Compile Include="Features\UpgradeAndCopy\UpgradeAndCopyCommand.cs" />
+    <Compile Include="Features\UpgradeAndCopy\UpgradeAndCopyService.cs" />
+    <Compile Include="Features\UpgradeAndCopy\Models\UpgradeAndCopyResult.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
     <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
@@ -238,6 +242,7 @@
 
   </Target>
 </Project>
+
 
 
 
