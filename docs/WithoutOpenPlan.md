@@ -1,48 +1,70 @@
 # WithoutOpen Plan
 
-## Scope
+## Status
 
-`WithoutOpen` is a new tool group for batch work on `.rvt` and `.rfa` files without opening them in the Revit UI.
+`WithoutOpen` is implemented and available as a dedicated ribbon panel with a `WithoutOpen` pulldown.
 
-This group contains two technical modes:
+The current toolset is intended for batch work on `.rvt` and `.rfa` files without opening them in the visible Revit UI. Some operations are truly metadata-only, while others open documents in the background through Revit API.
 
-- `Metadata-only`: read or modify file metadata and external references without opening a full Revit document in memory.
-- `Background-open`: open files through Revit API in the background, process them, save results, and close them without showing UI documents to the user.
-
-## Planned Tools
+## Implemented Tools
 
 1. `Batch File Scan`
-   - Input: selected files and later folder recursion.
-   - Output: per-file report with file type, version, worksharing flags, cloud/local classification, size, and action eligibility.
+   - Purpose: scan selected `.rvt` and `.rfa` files and classify them before processing.
    - API: `BasicFileInfo`.
+   - Output: in-app report preview plus optional CSV export.
+   - Key data: file type, version flags, worksharing flags, local/cloud classification, size, eligibility for `TransmissionData` and background-open workflows.
+
 2. `Unload Links`
-   - Input: local `.rvt` files.
-   - Output: unload selected external references and save updated transmission data.
+   - Purpose: unload external references from local `.rvt` projects without opening them in UI.
    - API: `TransmissionData`.
+   - Output: in-app report preview plus optional CSV export.
+   - Notes: skips non-project files and cloud paths.
+
 3. `Family Parameter Report`
-   - Input: `.rfa` files.
-   - Output: parameter/type inventory report.
+   - Purpose: inspect `.rfa` parameters and type metadata in background.
    - API: `Application.OpenDocumentFile`, `FamilyManager`.
+   - Output: in-app report preview plus optional CSV export.
+   - Key data: parameter name, shared/family, instance/type, group, spec type, formula, family/type counts.
+
 4. `Upgrade And Copy`
-   - Input: local `.rvt`/`.rfa` files older than current Revit.
-   - Output: upgraded copies saved to target folder.
+   - Purpose: create upgraded copies of local `.rvt` and `.rfa` files for the currently running Revit version.
    - API: `Application.OpenDocumentFile`, `SaveAsOptions`, `WorksharingSaveAsOptions`.
+   - Output: in-app report preview plus optional CSV export.
+   - Naming: output files use a Revit suffix such as `_R25` / `_R26`.
+   - Important behavior: if the file name already ends with a Revit suffix like `_R23`, `-R24`, ` R24`, or `R23`, that ending is replaced instead of appending another suffix.
+
 5. `Batch Add Shared Parameters`
-   - Input: `.rfa` files and selected shared parameter definitions.
-   - Output: updated family copies or in-place updates.
+   - Purpose: add selected shared parameters from a chosen shared parameters file to `.rfa` files.
    - API: `FamilyManager.AddParameter`.
+   - UI: dedicated options window for picking definitions, parameter group, instance/type, and save mode.
+   - Output: in-app report preview plus optional CSV export.
+   - Safety: supports `copy-first` mode to save modified families into a target folder.
+
 6. `Batch Rename Family Parameters And Types`
-   - Input: `.rfa` files and rename rules.
-   - Output: renamed family parameters and family types.
-   - API: `FamilyManager.RenameParameter`, `FamilyManager.Types`.
+   - Purpose: rename family parameters and family types in `.rfa` files using shared rename rules.
+   - API: `FamilyManager.RenameParameter`, `FamilyManager.RenameCurrentType`.
+   - UI: dedicated options window for find/replace, prefix, suffix, and save mode.
+   - Output: in-app report preview plus optional CSV export.
+   - Safety: supports `copy-first` mode to save modified families into a target folder.
+   - Notes: skips shared parameters and name collisions.
 
-## Ribbon Placement
+## Current UX Pattern
 
-Use a new pulldown under `Manage` named `WithoutOpen`.
+All `WithoutOpen` tools now follow the same reporting pattern:
+
+- operation window or file selection
+- processing in background / metadata mode
+- shared in-app `ReportPreviewWindow`
+- optional `Export CSV`
+
+Shared report preview files:
+- `src/HCB.RevitAddin/UI/Controls/ReportPreviewColumn.cs`
+- `src/HCB.RevitAddin/UI/Controls/ReportPreviewWindow.xaml`
+- `src/HCB.RevitAddin/UI/Controls/ReportPreviewWindow.xaml.cs`
 
 ## Shared Infrastructure
 
-Create reusable services under `Infrastructure/WithoutOpen/`:
+Reusable services under `Infrastructure/WithoutOpen/`:
 
 - `WithoutOpenFileClassifier`
 - `WithoutOpenFileDiscoveryService`
@@ -52,11 +74,53 @@ Create reusable services under `Infrastructure/WithoutOpen/`:
 - `WithoutOpenDocumentService`
 - `WithoutOpenTransmissionDataService`
 
-## Delivery Order
+Supporting models under `Infrastructure/WithoutOpen/Models/`:
 
-1. `Batch File Scan`
-2. `Unload Links`
-3. `Family Parameter Report`
-4. `Upgrade And Copy`
-5. `Batch Add Shared Parameters`
-6. `Batch Rename Family Parameters And Types`
+- `WithoutOpenFileKind`
+- `WithoutOpenFileScanItem`
+- `WithoutOpenOperationLogEntry`
+- `WithoutOpenOperationStatus`
+
+## Important Constraints
+
+- Revit cloud / ACC / BIM 360 paths are detected and skipped where unsupported.
+- Revit API work is single-threaded and currently executed sequentially.
+- Metadata-only mode is used only where the API allows it; family inspection and edits still require background document open.
+- `Upgrade And Copy` does not process files already saved in a later Revit version.
+- `Batch Rename Family Parameters And Types` intentionally skips shared parameters.
+- `FolderBrowserDialog` warnings `CA1416` are expected because this add-in is Windows/Revit-only.
+
+## Recent Decisions
+
+- Branch used for this work: `feature/without-open-tools`.
+- Tool group name remains `WithoutOpen`.
+- `Upgrade And Copy` naming uses `_Rxx` suffixes aligned with running Revit.
+- Report previews were preferred over immediate CSV-only output.
+- `WithoutOpen` icons were added, but these tools have no direct Python equivalents in `HCB_Tools`.
+
+## Commit Trail
+
+Main `WithoutOpen` implementation commits on this branch:
+
+- `ce1035d` `Add WithoutOpen batch file scan`
+- `7666e8b` `Add WithoutOpen unload links tool`
+- `6a5a4d0` `Add WithoutOpen family parameter report`
+- `6847fbd` `Add WithoutOpen upgrade and copy tool`
+- `ad06fe8` `Add WithoutOpen batch shared family parameters`
+- `2a19842` `Add WithoutOpen family rename tool`
+- `0086366` `Add copy-first safety for WithoutOpen family tools`
+- `52c2c02` `Add icons for WithoutOpen tools`
+- `b39f432` `Fix WithoutOpen rename init and upgrade naming`
+- `ac04131` `Add WithoutOpen report preview windows`
+- `de6c4ab` `Add WithoutOpen operation previews and suffix replacement`
+- `eb90a2e` `Add previews for WithoutOpen unload and upgrade`
+
+## Next Validation
+
+Recommended manual Revit checks:
+
+- run all 6 tools from the `WithoutOpen` pulldown
+- verify preview windows open and CSV export works
+- verify `Upgrade And Copy` renames `*_R23` to `*_R25` instead of creating `*_R23_R25`
+- verify `copy-first` mode for `Add Shared` and `Rename Family`
+- verify cloud files are skipped with clear messages
