@@ -1,7 +1,7 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using HCB.RevitAddin.UI.Controls;
+using HCB.RevitAddin.Features.RenameFamilyContent.UI;
 using HCB.RevitAddin.Infrastructure.WithoutOpen;
 
 namespace HCB.RevitAddin.Features.RenameFamilyContent;
@@ -18,7 +18,7 @@ public sealed class RenameFamilyContentCommand : IExternalCommand
             return Result.Cancelled;
         }
 
-        RenameOptionsWindow window = new("Rename Family Content", RenameOptionsMode.Views);
+        RenameFamilyContentWindow window = new();
         if (window.ShowDialog() != true)
         {
             return Result.Cancelled;

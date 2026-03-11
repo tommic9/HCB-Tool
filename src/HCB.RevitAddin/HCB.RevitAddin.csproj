@@ -85,6 +85,8 @@
     <Compile Include="Features\RenameFamilyContent\RenameFamilyContentCommand.cs" />
     <Compile Include="Features\RenameFamilyContent\RenameFamilyContentService.cs" />
     <Compile Include="Features\RenameFamilyContent\Models\RenameFamilyContentResult.cs" />
+    <Compile Include="Features\RenameFamilyContent\Models\RenameFamilyContentOptions.cs" />
+    <Compile Include="Features\RenameFamilyContent\UI\RenameFamilyContentWindow.xaml.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
     <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
@@ -212,6 +214,7 @@
     <Page Include="Features\ViewFiltersBulkEdit\UI\ViewFiltersBulkEditWindow.xaml" />
     <Page Include="Features\ViewsDuplicate\UI\ViewsDuplicateWindow.xaml" />
     <Page Include="Features\BatchAddSharedFamilyParameters\UI\BatchAddSharedFamilyParametersWindow.xaml" />
+    <Page Include="Features\RenameFamilyContent\UI\RenameFamilyContentWindow.xaml" />
     <Compile Include="UI\Controls\DialogFooterBar.xaml.cs" />
     <Page Include="UI\Controls\DialogFooterBar.xaml" />
     <Compile Include="UI\Controls\ColorSelectionItem.cs" />
@@ -253,6 +256,7 @@
 
   </Target>
 </Project>
+
 
 
 

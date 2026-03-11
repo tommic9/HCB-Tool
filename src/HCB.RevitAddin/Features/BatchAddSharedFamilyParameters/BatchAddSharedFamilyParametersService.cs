@@ -72,6 +72,11 @@ public sealed class BatchAddSharedFamilyParametersService
         IReadOnlyList<FamilyParameterGroupOption> groupOptions = GetGroupOptions();
         FamilyParameterGroupOption groupOption = groupOptions.FirstOrDefault(option => option.Key == options.GroupKey) ?? groupOptions[0];
 
+        if (options.SaveAsCopy)
+        {
+            Directory.CreateDirectory(options.OutputFolderPath);
+        }
+
         string originalPath = application.SharedParametersFilename;
         application.SharedParametersFilename = sharedParameterFilePath;
 
@@ -99,7 +104,7 @@ public sealed class BatchAddSharedFamilyParametersService
             List<WithoutOpenOperationLogEntry> entries = new(normalizedPaths.Count);
             foreach (string familyPath in normalizedPaths)
             {
-                entries.Add(AddToSingleFamily(application, familyPath, selectedDefinitions, groupOption.GroupTypeId, options.IsInstance));
+                entries.Add(AddToSingleFamily(application, familyPath, selectedDefinitions, groupOption.GroupTypeId, options));
             }
 
             return new BatchAddSharedFamilyParametersResult
@@ -113,7 +118,7 @@ public sealed class BatchAddSharedFamilyParametersService
         }
     }
 
-    private WithoutOpenOperationLogEntry AddToSingleFamily(Application application, string familyPath, IReadOnlyDictionary<string, ExternalDefinition> selectedDefinitions, ForgeTypeId groupTypeId, bool isInstance)
+    private WithoutOpenOperationLogEntry AddToSingleFamily(Application application, string familyPath, IReadOnlyDictionary<string, ExternalDefinition> selectedDefinitions, ForgeTypeId groupTypeId, BatchAddSharedFamilyParametersOptions options)
     {
         DateTime startedAt = DateTime.UtcNow;
 
@@ -150,7 +155,7 @@ public sealed class BatchAddSharedFamilyParametersService
                         continue;
                     }
 
-                    familyManager.AddParameter(definition, groupTypeId, isInstance);
+                    familyManager.AddParameter(definition, groupTypeId, options.IsInstance);
                     existingNames.Add(parameterName);
                     addedCount++;
                 }
@@ -162,8 +167,8 @@ public sealed class BatchAddSharedFamilyParametersService
                     return CreateLog(familyPath, WithoutOpenOperationStatus.Skipped, "Brak nowych parametrow do dodania.", startedAt);
                 }
 
-                document.Save();
-                return CreateLog(familyPath, WithoutOpenOperationStatus.Success, $"Dodano parametry: {addedCount}.", startedAt);
+                string savedPath = SaveFamily(document, familyPath, options);
+                return CreateLog(familyPath, WithoutOpenOperationStatus.Success, $"Dodano parametry: {addedCount}. Zapis: {savedPath}", startedAt);
             }
             finally
             {
@@ -177,6 +182,24 @@ public sealed class BatchAddSharedFamilyParametersService
         {
             return CreateLog(familyPath, WithoutOpenOperationStatus.Failed, exception.Message, startedAt);
         }
+    }
+
+    private static string SaveFamily(Document document, string sourcePath, BatchAddSharedFamilyParametersOptions options)
+    {
+        if (!options.SaveAsCopy)
+        {
+            document.Save();
+            return sourcePath;
+        }
+
+        string targetPath = Path.Combine(options.OutputFolderPath, Path.GetFileName(sourcePath));
+        SaveAsOptions saveAsOptions = new()
+        {
+            OverwriteExistingFile = true
+        };
+
+        document.SaveAs(targetPath, saveAsOptions);
+        return targetPath;
     }
 
     private static Dictionary<string, ExternalDefinition> GetDefinitions(DefinitionFile definitionFile, IEnumerable<string> selectedNames)
@@ -210,4 +233,3 @@ public sealed class BatchAddSharedFamilyParametersService
         };
     }
 }
-

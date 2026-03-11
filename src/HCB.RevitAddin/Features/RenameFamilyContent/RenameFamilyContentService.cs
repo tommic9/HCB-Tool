@@ -4,7 +4,6 @@ using Autodesk.Revit.DB;
 using HCB.RevitAddin.Features.RenameFamilyContent.Models;
 using HCB.RevitAddin.Infrastructure.WithoutOpen;
 using HCB.RevitAddin.Infrastructure.WithoutOpen.Models;
-using HCB.RevitAddin.UI.Controls;
 
 namespace HCB.RevitAddin.Features.RenameFamilyContent;
 
@@ -14,11 +13,15 @@ public sealed class RenameFamilyContentService
     private readonly WithoutOpenFileClassifier _fileClassifier = new();
     private readonly WithoutOpenDocumentService _documentService = new();
 
-    public RenameFamilyContentResult Rename(Application application, IEnumerable<string> familyPaths, RenameOptions options)
+    public RenameFamilyContentResult Rename(Application application, IEnumerable<string> familyPaths, RenameFamilyContentOptions options)
     {
         IReadOnlyList<string> normalizedPaths = _fileDiscoveryService.Normalize(familyPaths);
-        List<WithoutOpenOperationLogEntry> entries = new(normalizedPaths.Count);
+        if (options.SaveAsCopy)
+        {
+            Directory.CreateDirectory(options.OutputFolderPath);
+        }
 
+        List<WithoutOpenOperationLogEntry> entries = new(normalizedPaths.Count);
         foreach (string familyPath in normalizedPaths)
         {
             entries.Add(RenameSingle(application, familyPath, options));
@@ -30,7 +33,7 @@ public sealed class RenameFamilyContentService
         };
     }
 
-    private WithoutOpenOperationLogEntry RenameSingle(Application application, string familyPath, RenameOptions options)
+    private WithoutOpenOperationLogEntry RenameSingle(Application application, string familyPath, RenameFamilyContentOptions options)
     {
         DateTime startedAt = DateTime.UtcNow;
 
@@ -120,8 +123,8 @@ public sealed class RenameFamilyContentService
                     return CreateLog(familyPath, WithoutOpenOperationStatus.Skipped, "Brak zmian do zapisania.", startedAt);
                 }
 
-                document.Save();
-                return CreateLog(familyPath, WithoutOpenOperationStatus.Success, $"Zmieniono parametry: {renamedParameters}, typy: {renamedTypes}.", startedAt);
+                string savedPath = SaveFamily(document, familyPath, options);
+                return CreateLog(familyPath, WithoutOpenOperationStatus.Success, $"Zmieniono parametry: {renamedParameters}, typy: {renamedTypes}. Zapis: {savedPath}", startedAt);
             }
             finally
             {
@@ -137,7 +140,25 @@ public sealed class RenameFamilyContentService
         }
     }
 
-    private static string ApplyRenameRule(string value, RenameOptions options)
+    private static string SaveFamily(Document document, string sourcePath, RenameFamilyContentOptions options)
+    {
+        if (!options.SaveAsCopy)
+        {
+            document.Save();
+            return sourcePath;
+        }
+
+        string targetPath = Path.Combine(options.OutputFolderPath, Path.GetFileName(sourcePath));
+        SaveAsOptions saveAsOptions = new()
+        {
+            OverwriteExistingFile = true
+        };
+
+        document.SaveAs(targetPath, saveAsOptions);
+        return targetPath;
+    }
+
+    private static string ApplyRenameRule(string value, RenameFamilyContentOptions options)
     {
         string renamed = value;
 
@@ -162,4 +183,3 @@ public sealed class RenameFamilyContentService
         };
     }
 }
-

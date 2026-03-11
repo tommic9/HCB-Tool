@@ -7,4 +7,8 @@ public sealed class BatchAddSharedFamilyParametersOptions
     public bool IsInstance { get; init; }
 
     public string GroupKey { get; init; } = string.Empty;
+
+    public bool SaveAsCopy { get; init; } = true;
+
+    public string OutputFolderPath { get; init; } = string.Empty;
 }
