@@ -220,6 +220,9 @@
     <Compile Include="UI\Controls\ColorSelectionItem.cs" />
     <Compile Include="UI\Controls\ColorSelectionWindow.xaml.cs" />
     <Page Include="UI\Controls\ColorSelectionWindow.xaml" />
+    <Compile Include="UI\Controls\ReportPreviewColumn.cs" />
+    <Compile Include="UI\Controls\ReportPreviewWindow.xaml.cs" />
+    <Page Include="UI\Controls\ReportPreviewWindow.xaml" />
     <Compile Include="UI\Controls\RenameOptionsWindow.xaml.cs" />
     <Page Include="UI\Controls\RenameOptionsWindow.xaml" />
     <Compile Include="UI\Controls\SelectionListItem.cs" />
