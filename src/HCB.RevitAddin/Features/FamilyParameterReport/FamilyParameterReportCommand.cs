@@ -62,7 +62,9 @@ public sealed class FamilyParameterReportCommand : IExternalCommand
             "withoutopen-family-parameters.csv",
             outputPath => service.ExportCsv(result.Rows, outputPath),
             "Zmien nazwe",
-            row => RenameFromReportRow(commandData, row));
+            row => RenameFromReportRows(commandData, [row]),
+            "Batch rename",
+            selectedRows => RenameFromReportRows(commandData, selectedRows));
 
         previewWindow.ShowDialog();
         return Result.Succeeded;
@@ -87,44 +89,146 @@ public sealed class FamilyParameterReportCommand : IExternalCommand
         };
     }
 
-    private static void RenameFromReportRow(ExternalCommandData commandData, IReadOnlyDictionary<string, string> row)
+    private static void RenameFromReportRows(ExternalCommandData commandData, IReadOnlyList<IReadOnlyDictionary<string, string>> selectedRows)
     {
-        string parameterName = row.TryGetValue("ParameterName", out string? parameterValue) ? parameterValue ?? string.Empty : string.Empty;
-        string filePath = row.TryGetValue("FilePath", out string? pathValue) ? pathValue ?? string.Empty : string.Empty;
-        bool canRename = row.TryGetValue("CanRename", out string? canRenameValue) && string.Equals(canRenameValue, "Tak", StringComparison.OrdinalIgnoreCase);
+        IReadOnlyList<IReadOnlyDictionary<string, string>> renameableRows = selectedRows
+            .Where(CanRename)
+            .ToList();
 
-        if (!canRename)
+        if (renameableRows.Count == 0)
         {
-            TaskDialog.Show("WithoutOpen - Family Report", $"Parametr '{parameterName}' jest chroniony i nie powinien byc zmieniany tym narzedziem.");
+            TaskDialog.Show("WithoutOpen - Family Report", "Z zaznaczenia nie ma parametrow, ktore mozna zmienic tym narzedziem.");
             return;
         }
+
+        int protectedCount = selectedRows.Count - renameableRows.Count;
+        IReadOnlyList<string> familyPaths = renameableRows
+            .Select(GetFilePath)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        IReadOnlyList<string> targetKeys = renameableRows
+            .Select(row => RenameFamilyContentService.BuildTargetKey(GetFilePath(row), GetParameterName(row)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        IReadOnlyList<string> parameterNames = renameableRows
+            .Select(GetParameterName)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         RenameFamilyContentWindow window = new(
             new RenameFamilyContentOptions
             {
-                Find = parameterName,
-                Replace = parameterName,
-                SaveAsCopy = true
+                Find = parameterNames.Count == 1 ? parameterNames[0] : string.Empty,
+                Replace = parameterNames.Count == 1 ? parameterNames[0] : string.Empty,
+                SaveAsCopy = true,
+                TargetParameterKeys = targetKeys
             },
-            $"Przygotowano rename dla parametru '{parameterName}'. Zmien pole 'Zamien na' albo ustaw dodatkowy prefiks/sufiks.");
+            BuildRenameStatusText(renameableRows.Count, familyPaths.Count, parameterNames, protectedCount));
 
         if (window.ShowDialog() != true)
         {
             return;
         }
 
-        RenameFamilyContentService service = new();
-        RenameFamilyContentResult result = service.Rename(commandData.Application.Application, [filePath], window.Options);
-        WithoutOpenOperationLogEntry entry = result.Entries.FirstOrDefault() ?? new WithoutOpenOperationLogEntry
+        RenameFamilyContentOptions windowOptions = window.Options;
+        RenameFamilyContentOptions options = new()
         {
-            FilePath = filePath,
-            Status = Infrastructure.WithoutOpen.Models.WithoutOpenOperationStatus.Skipped,
-            Message = "Brak wyniku operacji rename."
+            Prefix = windowOptions.Prefix,
+            Find = windowOptions.Find,
+            Replace = windowOptions.Replace,
+            Suffix = windowOptions.Suffix,
+            SaveAsCopy = windowOptions.SaveAsCopy,
+            OutputFolderPath = windowOptions.OutputFolderPath,
+            TargetParameterKeys = targetKeys
         };
 
-        TaskDialog.Show(
+        RenameFamilyContentService service = new();
+        RenameFamilyContentResult result = service.Rename(commandData.Application.Application, familyPaths, options);
+        ShowRenameResultPreview(result);
+    }
+
+    private static string BuildRenameStatusText(int selectedRowCount, int familyCount, IReadOnlyList<string> parameterNames, int protectedCount)
+    {
+        string scopeText = parameterNames.Count == 1
+            ? $"Zakres: {selectedRowCount} wiersz(y), {familyCount} rodzin(y), parametr '{parameterNames[0]}'."
+            : $"Zakres: {selectedRowCount} wiersz(y), {familyCount} rodzin(y), {parameterNames.Count} roznych parametrow.";
+
+        if (protectedCount <= 0)
+        {
+            return scopeText + " Zmiany zostana zastosowane tylko do zaznaczonych parametrow mozliwych do zmiany nazwy.";
+        }
+
+        return scopeText + $" Pominieto z zaznaczenia parametry chronione: {protectedCount}. Zmiany zostana zastosowane tylko do zaznaczonych parametrow mozliwych do zmiany nazwy.";
+    }
+
+    private static void ShowRenameResultPreview(RenameFamilyContentResult result)
+    {
+        List<ReportPreviewColumn> columns =
+        [
+            new() { Key = "FileName", Header = "Plik" },
+            new() { Key = "Status", Header = "Status" },
+            new() { Key = "Message", Header = "Komunikat" },
+            new() { Key = "OutputPath", Header = "Plik wynikowy" },
+            new() { Key = "Duration", Header = "Czas [s]" },
+            new() { Key = "FilePath", Header = "Sciezka" }
+        ];
+
+        IReadOnlyList<IReadOnlyDictionary<string, string>> rows = result.Entries
+            .Select(ToOperationRow)
+            .ToList();
+
+        string summary =
+            $"Pliki: {result.Entries.Count} | Sukces: {result.SuccessCount} | Pominiete: {result.SkippedCount} | Bledy: {result.FailedCount}";
+
+        ReportPreviewWindow previewWindow = new(
             "WithoutOpen - Rename Family Parameters",
-            $"Plik: {Path.GetFileName(filePath)}\nStatus: {entry.Status}\nKomunikat: {entry.Message}");
+            summary,
+            columns,
+            rows,
+            "withoutopen-rename-family-parameters.csv",
+            outputPath =>
+            {
+                WithoutOpenBatchLogService logService = new();
+                logService.ExportOperationsToCsv(result.Entries, outputPath);
+            });
+
+        previewWindow.ShowDialog();
+    }
+
+    private static IReadOnlyDictionary<string, string> ToOperationRow(WithoutOpenOperationLogEntry entry)
+    {
+        return new Dictionary<string, string>
+        {
+            ["FileName"] = Path.GetFileName(entry.FilePath),
+            ["Status"] = entry.Status.ToString(),
+            ["Message"] = entry.Message,
+            ["OutputPath"] = entry.OutputPath,
+            ["Duration"] = entry.Duration.TotalSeconds.ToString("0.###"),
+            ["FilePath"] = entry.FilePath
+        };
+    }
+
+    private static bool CanRename(IReadOnlyDictionary<string, string> row)
+    {
+        return row.TryGetValue("CanRename", out string? canRenameValue) &&
+               string.Equals(canRenameValue, "Tak", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetFilePath(IReadOnlyDictionary<string, string> row)
+    {
+        return row.TryGetValue("FilePath", out string? pathValue)
+            ? pathValue ?? string.Empty
+            : string.Empty;
+    }
+
+    private static string GetParameterName(IReadOnlyDictionary<string, string> row)
+    {
+        return row.TryGetValue("ParameterName", out string? parameterValue)
+            ? parameterValue ?? string.Empty
+            : string.Empty;
     }
 }
-

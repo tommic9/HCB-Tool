@@ -23,7 +23,7 @@ public sealed class UnloadLinksCommand : IExternalCommand
         }
 
         UnloadLinksService service = new();
-        var result = service.UnloadAllLinks(filePaths);
+        var result = service.UnloadAllLinks(commandData.Application.Application, filePaths);
 
         List<ReportPreviewColumn> columns =
         [
@@ -69,3 +69,4 @@ public sealed class UnloadLinksCommand : IExternalCommand
         };
     }
 }
+

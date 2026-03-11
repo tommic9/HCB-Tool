@@ -5,6 +5,7 @@ using System.Windows;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using HCB.RevitAddin.Features.CopyFilters.Models;
+using HCB.RevitAddin.UI.Controls;
 
 namespace HCB.RevitAddin.Features.CopyFilters.UI
 {
@@ -30,8 +31,9 @@ namespace HCB.RevitAddin.Features.CopyFilters.UI
                 .Select(view => new ViewListItem(view))
                 .ToList();
 
-            SourceViewsListBox.ItemsSource = _allViews;
-            DestinationViewsListBox.ItemsSource = _allViews;
+            InitializeViewFilters();
+            ApplySourceFilters();
+            ApplyDestinationFilters();
             SetStatus(_allViews.Count == 0
                 ? "Nie znaleziono widoków ani szablonów obsługujących filtry."
                 : "Wybierz widok źródłowy, aby wczytać jego filtry.");
@@ -150,39 +152,60 @@ namespace HCB.RevitAddin.Features.CopyFilters.UI
 
         private void SourceSearchTextBox_OnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            SourceViewsListBox.ItemsSource = FilterViews(SourceSearchTextBox.Text);
+            ApplySourceFilters();
         }
 
         private void DestinationSearchTextBox_OnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            IEnumerable<ViewListItem> filtered = FilterViews(DestinationSearchTextBox.Text);
-            ViewListItem? selectedSource = SourceViewsListBox.SelectedItem as ViewListItem;
-            if (selectedSource != null)
-            {
-                filtered = filtered.Where(item => item.Id.Value != selectedSource.Id.Value);
-            }
-
-            DestinationViewsListBox.ItemsSource = filtered.ToList();
+            ApplyDestinationFilters();
         }
 
-        private List<ViewListItem> FilterViews(string searchText)
+        private void SourceFilters_OnSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(searchText))
+            if (!IsLoaded)
             {
-                return _allViews.ToList();
+                return;
             }
 
-            return _allViews
-                .Where(item => item.DisplayName.IndexOf(searchText.Trim(), StringComparison.CurrentCultureIgnoreCase) >= 0)
-                .ToList();
+            ApplySourceFilters();
+        }
+
+        private void DestinationFilters_OnSelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            ApplyDestinationFilters();
+        }
+
+        private List<ViewListItem> FilterViews(string searchText, string? viewType, string? itemType)
+        {
+            const string allValue = "__ALL__";
+            IEnumerable<ViewListItem> query = _allViews;
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                query = query.Where(item => item.DisplayName.IndexOf(searchText.Trim(), StringComparison.CurrentCultureIgnoreCase) >= 0);
+            }
+
+            if (!string.IsNullOrWhiteSpace(viewType) && !string.Equals(viewType, allValue, StringComparison.Ordinal))
+            {
+                query = query.Where(item => string.Equals(item.ViewTypeName, viewType, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(itemType) && !string.Equals(itemType, allValue, StringComparison.Ordinal))
+            {
+                query = query.Where(item => string.Equals(item.ItemTypeName, itemType, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            return query.ToList();
         }
 
         private void RemoveSourceFromDestinations(ElementId sourceId)
         {
-            List<ViewListItem> currentItems = DestinationViewsListBox.ItemsSource.Cast<ViewListItem>().ToList();
-            DestinationViewsListBox.ItemsSource = currentItems
-                .Where(item => item.Id.Value != sourceId.Value)
-                .ToList();
+            ApplyDestinationFilters();
         }
 
         private void SelectAllFiltersButton_OnClick(object sender, RoutedEventArgs e)
@@ -214,6 +237,63 @@ namespace HCB.RevitAddin.Features.CopyFilters.UI
         private void SetStatus(string message)
         {
             FooterBar.StatusText = message;
+        }
+
+        private void InitializeViewFilters()
+        {
+            const string allValue = "__ALL__";
+
+            List<SelectionListItem> viewTypeOptions =
+            [
+                new SelectionListItem(allValue, "Wszystkie")
+            ];
+
+            viewTypeOptions.AddRange(_allViews
+                .Select(item => item.ViewTypeName)
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
+                .Select(name => new SelectionListItem(name, name)));
+
+            List<SelectionListItem> typeOptions =
+            [
+                new SelectionListItem(allValue, "Wszystkie"),
+                new SelectionListItem("View", "View"),
+                new SelectionListItem("Template", "Template")
+            ];
+
+            SourceViewTypeComboBox.ItemsSource = viewTypeOptions;
+            SourceViewTypeComboBox.SelectedValue = allValue;
+            DestinationViewTypeComboBox.ItemsSource = viewTypeOptions.ToList();
+            DestinationViewTypeComboBox.SelectedValue = allValue;
+
+            SourceTypeComboBox.ItemsSource = typeOptions;
+            SourceTypeComboBox.SelectedValue = allValue;
+            DestinationTypeComboBox.ItemsSource = typeOptions.ToList();
+            DestinationTypeComboBox.SelectedValue = allValue;
+        }
+
+        private void ApplySourceFilters()
+        {
+            SourceViewsListBox.ItemsSource = FilterViews(
+                SourceSearchTextBox.Text,
+                SourceViewTypeComboBox.SelectedValue as string,
+                SourceTypeComboBox.SelectedValue as string);
+        }
+
+        private void ApplyDestinationFilters()
+        {
+            IEnumerable<ViewListItem> filtered = FilterViews(
+                DestinationSearchTextBox.Text,
+                DestinationViewTypeComboBox.SelectedValue as string,
+                DestinationTypeComboBox.SelectedValue as string);
+
+            ViewListItem? selectedSource = SourceViewsListBox.SelectedItem as ViewListItem;
+            if (selectedSource != null)
+            {
+                filtered = filtered.Where(item => item.Id.Value != selectedSource.Id.Value);
+            }
+
+            DestinationViewsListBox.ItemsSource = filtered.ToList();
         }
     }
 }

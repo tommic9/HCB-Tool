@@ -1,4 +1,3 @@
-using System.Linq;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -20,18 +19,7 @@ public sealed class DuctFittingsAreaMagicadCommand : IExternalCommand
 
         DuctFittingsAreaService service = new();
         DuctFittingsAreaResult result = service.CalculateMagicad(commandData.Application.ActiveUIDocument.Document, optionsWindow.Options);
-        TaskDialog.Show("Duct Fittings Area MAGICAD", BuildSummary(result));
+        DuctFittingsAreaLinearCommand.ShowReport("Duct Fittings Area MAGICAD", "duct-fittings-area-magicad.csv", result);
         return Result.Succeeded;
-    }
-
-    private static string BuildSummary(DuctFittingsAreaResult result)
-    {
-        string summary = $"Przetworzone: {result.ProcessedCount}\nZaktualizowane: {result.UpdatedCount}\nPominięte: {result.SkippedCount}";
-        if (result.Messages.Count == 0)
-        {
-            return summary;
-        }
-
-        return $"{summary}\n\nSzczegóły:\n{string.Join("\n", result.Messages.Take(12))}";
     }
 }

@@ -36,31 +36,45 @@ public sealed class WithoutOpenTransmissionDataService
                 return CreateLog(filePath, WithoutOpenOperationStatus.Failed, "Nie udalo sie odczytac TransmissionData.", startedAt);
             }
 
+            int foundSupportedReferences = 0;
             int changedReferences = 0;
             foreach (ElementId referenceId in transmissionData.GetAllExternalFileReferenceIds())
             {
                 ExternalFileReference reference = transmissionData.GetLastSavedReferenceData(referenceId);
-                if (reference == null)
+                if (reference == null || !CanUnloadReference(reference))
                 {
                     continue;
                 }
 
+                foundSupportedReferences++;
                 transmissionData.SetDesiredReferenceData(referenceId, reference.GetPath(), reference.PathType, false);
                 changedReferences++;
             }
 
-            if (changedReferences == 0)
+            if (foundSupportedReferences == 0)
             {
-                return CreateLog(filePath, WithoutOpenOperationStatus.Skipped, "Nie znaleziono zewnetrznych referencji do odlaczenia.", startedAt);
+                return CreateLog(filePath, WithoutOpenOperationStatus.Skipped, "Nie znaleziono obslugiwanych linkow do odlaczenia.", startedAt);
             }
 
+            transmissionData.IsTransmitted = true;
             TransmissionData.WriteTransmissionData(modelPath, transmissionData);
-            return CreateLog(filePath, WithoutOpenOperationStatus.Success, $"Odlaczono referencje: {changedReferences}.", startedAt);
+
+            return CreateLog(
+                filePath,
+                WithoutOpenOperationStatus.Success,
+                $"Odlaczono linki: {changedReferences}. Model oznaczono jako transmitted, wiec przy kolejnym otwarciu Revit odczyta nowe ustawienia linkow.",
+                startedAt);
         }
         catch (Exception exception)
         {
             return CreateLog(filePath, WithoutOpenOperationStatus.Failed, exception.Message, startedAt);
         }
+    }
+
+    private static bool CanUnloadReference(ExternalFileReference reference)
+    {
+        return reference.ExternalFileReferenceType == ExternalFileReferenceType.RevitLink ||
+               reference.ExternalFileReferenceType == ExternalFileReferenceType.CADLink;
     }
 
     private static WithoutOpenOperationLogEntry CreateLog(string filePath, WithoutOpenOperationStatus status, string message, DateTime startedAt)
@@ -75,4 +89,3 @@ public sealed class WithoutOpenTransmissionDataService
         };
     }
 }
-

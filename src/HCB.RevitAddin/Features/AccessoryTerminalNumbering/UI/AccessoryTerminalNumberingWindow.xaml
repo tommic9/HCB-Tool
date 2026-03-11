@@ -1,0 +1,208 @@
+<Window x:Class="HCB.RevitAddin.Features.AccessoryTerminalNumbering.UI.AccessoryTerminalNumberingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="MEP Item Numbering"
+        Width="520"
+        Height="700"
+        MinWidth="440"
+        MinHeight="620"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="MEP Item Numbering"
+                   Style="{StaticResource SectionTitleStyle}" />
+
+        <ScrollViewer Grid.Row="1"
+                      Margin="0,16,0,0"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Padding="12"
+                        Background="#F6F8FB"
+                        BorderBrush="#D8E0EC"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionLabelStyle}"
+                                   Text="Jak dziala to narzedzie" />
+                        <TextBlock Margin="0,8,0,0"
+                                   Style="{StaticResource StatusTextStyle}"
+                                   Opacity="0.72"
+                                   TextWrapping="Wrap"
+                                   Text="elementy sa najpierw grupowane po systemie, potem po kategorii i cechach typu. kazda grupa dostaje jeden numer, a licznik startuje od nowa dla kazdego systemu." />
+                        <TextBlock Margin="0,6,0,0"
+                                   Style="{StaticResource StatusTextStyle}"
+                                   Opacity="0.72"
+                                   TextWrapping="Wrap"
+                                   Text="obslugiwane kategorie: Duct Accessory, Pipe Accessory, Air Terminal. typy z manufacturer = FabricAir sa pomijane." />
+                    </StackPanel>
+                </Border>
+
+                <GroupBox Margin="0,16,0,0"
+                          Header="Ustawienia numeracji">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource SectionLabelStyle}"
+                                       Text="Parametr docelowy"
+                                       VerticalAlignment="Center" />
+                            <ComboBox x:Name="TargetParameterComboBox"
+                                      Grid.Column="1"
+                                      SelectionChanged="OptionsChanged" />
+                        </Grid>
+                        <TextBlock Margin="0,0,0,12"
+                                   Style="{StaticResource StatusTextStyle}"
+                                   Opacity="0.62"
+                                   TextWrapping="Wrap"
+                                   Text="mala podpowiedz: tutaj zostanie wpisany gotowy numer dla kazdego elementu." />
+
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="180" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource SectionLabelStyle}"
+                                       Text="Numer startowy"
+                                       VerticalAlignment="Center" />
+                            <TextBox x:Name="StartNumberTextBox"
+                                     Grid.Column="1"
+                                     Text="1"
+                                     TextChanged="OptionsChanged" />
+                        </Grid>
+                        <TextBlock Margin="0,0,0,12"
+                                   Style="{StaticResource StatusTextStyle}"
+                                   Opacity="0.62"
+                                   TextWrapping="Wrap"
+                                   Text="mala podpowiedz: ten numer jest startem licznika w kazdym systemie osobno." />
+
+                        <StackPanel x:Name="DuctAccessoryPrefixPanel">
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource SectionLabelStyle}"
+                                           Text="Prefiks Duct Accessory"
+                                           VerticalAlignment="Center" />
+                                <TextBox x:Name="DuctAccessoryPrefixTextBox"
+                                         Grid.Column="1"
+                                         TextChanged="OptionsChanged" />
+                            </Grid>
+                            <TextBlock Margin="0,0,0,12"
+                                       Style="{StaticResource StatusTextStyle}"
+                                       Opacity="0.62"
+                                       TextWrapping="Wrap"
+                                       Text="mala podpowiedz: opcjonalny dopisek dla Duct Accessory, np. DA. jesli zostawisz puste, numer nie dostanie tego czlonu." />
+                        </StackPanel>
+
+                        <StackPanel x:Name="PipeAccessoryPrefixPanel">
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource SectionLabelStyle}"
+                                           Text="Prefiks Pipe Accessory"
+                                           VerticalAlignment="Center" />
+                                <TextBox x:Name="PipeAccessoryPrefixTextBox"
+                                         Grid.Column="1"
+                                         TextChanged="OptionsChanged" />
+                            </Grid>
+                            <TextBlock Margin="0,0,0,12"
+                                       Style="{StaticResource StatusTextStyle}"
+                                       Opacity="0.62"
+                                       TextWrapping="Wrap"
+                                       Text="mala podpowiedz: opcjonalny dopisek dla Pipe Accessory, np. PA. jesli narzedzie nie numeruje pipe accessories, to to pole nie ma wplywu." />
+                        </StackPanel>
+
+                        <StackPanel x:Name="TerminalPrefixPanel">
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource SectionLabelStyle}"
+                                           Text="Prefiks Air Terminal"
+                                           VerticalAlignment="Center" />
+                                <TextBox x:Name="TerminalPrefixTextBox"
+                                         Grid.Column="1"
+                                         Text="AT"
+                                         TextChanged="OptionsChanged" />
+                            </Grid>
+                            <TextBlock Margin="0,0,0,12"
+                                       Style="{StaticResource StatusTextStyle}"
+                                       Opacity="0.62"
+                                       TextWrapping="Wrap"
+                                       Text="mala podpowiedz: prefiks dla Air Terminal, domyslnie AT. przyklad wyniku: AT.1" />
+                        </StackPanel>
+
+                        <StackPanel x:Name="AccessoryTypeParameterPanel">
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource SectionLabelStyle}"
+                                           Text="Type Parameter"
+                                           VerticalAlignment="Center" />
+                                <ComboBox x:Name="AccessoryTypeParameterComboBox"
+                                          Grid.Column="1"
+                                          SelectionChanged="OptionsChanged" />
+                            </Grid>
+                            <TextBlock Margin="0,0,0,12"
+                                       Style="{StaticResource StatusTextStyle}"
+                                       Opacity="0.62"
+                                       TextWrapping="Wrap"
+                                       Text="mala podpowiedz: ten parametr jest czytany z typu accessories i moze wejsc do numeru. wybierz '(brak)', jesli nie chcesz dopisku z typu." />
+                        </StackPanel>
+
+                        <Border Padding="10"
+                                Background="#FAFBFD"
+                                BorderBrush="#D8E0EC"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource SectionLabelStyle}"
+                                           Text="Preview" />
+                                <TextBlock x:Name="PreviewTextBlock"
+                                           Margin="0,8,0,0"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           TextWrapping="Wrap" />
+                                <TextBlock Margin="0,8,0,0"
+                                           Style="{StaticResource StatusTextStyle}"
+                                           Opacity="0.72"
+                                           TextWrapping="Wrap"
+                                           Text="przyklad logiki numeru: system + opcjonalny prefiks kategorii + opcjonalny type parameter + kolejny numer." />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="2"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Numeruj"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

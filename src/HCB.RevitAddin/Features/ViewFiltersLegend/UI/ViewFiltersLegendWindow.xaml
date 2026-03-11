@@ -1,0 +1,135 @@
+<Window x:Class="HCB.RevitAddin.Features.ViewFiltersLegend.UI.ViewFiltersLegendWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="View Filters Legend"
+        Width="520"
+        Height="541"
+        MinWidth="480"
+        MinHeight="420"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="View Filters Legend"
+                   Style="{StaticResource SectionTitleStyle}" />
+
+        <GroupBox Grid.Row="1"
+                  Margin="0,16,0,0"
+                  Header="Ustawienia legendy">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Typ tekstu"
+                           VerticalAlignment="Center" />
+                <ComboBox x:Name="TextTypeComboBox"
+                          Grid.Row="0"
+                          Grid.Column="1" />
+
+                <TextBlock Grid.Row="2"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Szerokosc [mm]"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="RegionWidthTextBox"
+                         Grid.Row="2"
+                         Grid.Column="1"
+                         Text="150" />
+
+                <TextBlock Grid.Row="4"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Wysokosc [mm]"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="RegionHeightTextBox"
+                         Grid.Row="4"
+                         Grid.Column="1"
+                         Text="80" />
+
+                <TextBlock Grid.Row="6"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Odstep [mm]"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="SpacingTextBox"
+                         Grid.Row="6"
+                         Grid.Column="1"
+                         Text="50" />
+
+                <TextBlock Grid.Row="8"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Dlugosc linii [mm]"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="LineWidthTextBox"
+                         Grid.Row="8"
+                         Grid.Column="1"
+                         Text="200" />
+
+                <StackPanel Grid.Row="10"
+                            Grid.ColumnSpan="2"
+                            Margin="0,4,0,0">
+                    <TextBlock Margin="0,0,0,8"
+                               Style="{StaticResource SectionLabelStyle}"
+                               Text="Elementy legendy" />
+                    <WrapPanel Orientation="Vertical">
+                        <CheckBox x:Name="ProjectionLineCheckBox"
+                                  Margin="0,0,12,8"
+                                  Content="Projection line"
+                                  IsChecked="True" />
+                        <CheckBox x:Name="CutLineCheckBox"
+                                  Margin="0,0,12,8"
+                                  Content="Cut line"
+                                  IsChecked="True" />
+                        <CheckBox x:Name="SurfaceFillCheckBox"
+                                  Margin="0,0,12,8"
+                                  Content="Projection pattern"
+                                  IsChecked="True" />
+                        <CheckBox x:Name="CutFillCheckBox"
+                                  Margin="0,0,12,8"
+                                  Content="Cut pattern"
+                                  IsChecked="True" />
+                        <CheckBox x:Name="FilterNameCheckBox"
+                                  Margin="0,0,12,8"
+                                  Content="Filter name"
+                                  IsChecked="True" />
+                    </WrapPanel>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="2"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Generuj"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

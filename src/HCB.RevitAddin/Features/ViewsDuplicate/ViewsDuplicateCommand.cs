@@ -26,10 +26,18 @@ public sealed class ViewsDuplicateCommand : IExternalCommand
 
         if (views.Count == 0)
         {
+            List<View> availableViews = service.GetAvailableViews(document).ToList();
             SelectionListWindow picker = new(
                 "Duplicate Views",
                 "Wybierz widoki",
-                service.GetAvailableViews(document).Select(view => new SelectionListItem(view, view.Name)));
+                availableViews.Select(ToViewSelectionItem),
+                [],
+                "Wybierz",
+                null,
+                availableViews.Contains(uiDocument.ActiveView) ? uiDocument.ActiveView : null,
+                "Active View",
+                "ViewType",
+                "Type");
 
             if (picker.ShowDialog() != true)
             {
@@ -51,5 +59,14 @@ public sealed class ViewsDuplicateCommand : IExternalCommand
             $"Widoki zrodlowe: {result.SourceCount}\nUtworzone kopie: {result.CreatedCount}\n\n{string.Join("\n", result.Messages.Take(12))}");
 
         return Result.Succeeded;
+    }
+
+    private static SelectionListItem ToViewSelectionItem(View view)
+    {
+        return new SelectionListItem(
+            view,
+            view.Name,
+            view.ViewType.ToString(),
+            view.IsTemplate ? "Template" : "View");
     }
 }

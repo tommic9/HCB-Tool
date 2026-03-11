@@ -1,0 +1,90 @@
+<Window x:Class="HCB.RevitAddin.UI.Controls.NumberingOptionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Numbering Options"
+        Width="460"
+        Height="360"
+        MinWidth="420"
+        MinHeight="300"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="TitleTextBlock"
+                   Style="{StaticResource SectionTitleStyle}" />
+
+        <GroupBox Grid.Row="1"
+                  Margin="0,16,0,0"
+                  Header="Ustawienia numeracji">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Parametr docelowy"
+                           VerticalAlignment="Center" />
+                <ComboBox x:Name="ParameterComboBox"
+                          Grid.Row="0"
+                          Grid.Column="1" />
+
+                <TextBlock Grid.Row="2"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Numer startowy"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="StartNumberTextBox"
+                         Grid.Row="2"
+                         Grid.Column="1"
+                         Text="1" />
+
+                <TextBlock Grid.Row="4"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Prefiks"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="PrefixTextBox"
+                         Grid.Row="4"
+                         Grid.Column="1" />
+
+                <TextBlock Grid.Row="6"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Sufiks"
+                           VerticalAlignment="Center" />
+                <TextBox x:Name="SuffixTextBox"
+                         Grid.Row="6"
+                         Grid.Column="1" />
+            </Grid>
+        </GroupBox>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="2"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Numeruj"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

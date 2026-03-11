@@ -9,20 +9,48 @@ namespace HCB.RevitAddin.Features.SystemAssigner;
 
 public sealed class SystemAssignerService
 {
-    public SystemAssignerResult Apply(Document document, IReadOnlyList<Element> selectedEquipment)
+    public IReadOnlyList<string> GetPropagatableParameterNames(IReadOnlyList<Element> selectedEquipment)
+    {
+        if (selectedEquipment.Count == 0)
+        {
+            return [];
+        }
+
+        HashSet<string>? commonNames = null;
+        foreach (Element equipment in selectedEquipment)
+        {
+            HashSet<string> elementNames = equipment.Parameters
+                .Cast<Parameter>()
+                .Where(parameter => !parameter.IsReadOnly && parameter.StorageType == StorageType.String)
+                .Select(parameter => parameter.Definition?.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Cast<string>()
+                .ToHashSet(System.StringComparer.CurrentCultureIgnoreCase);
+
+            commonNames = commonNames == null
+                ? elementNames
+                : commonNames.Intersect(elementNames, System.StringComparer.CurrentCultureIgnoreCase).ToHashSet(System.StringComparer.CurrentCultureIgnoreCase);
+        }
+
+        return commonNames?
+            .OrderBy(name => name, System.StringComparer.CurrentCultureIgnoreCase)
+            .ToList() ?? [];
+    }
+
+    public SystemAssignerResult Apply(Document document, IReadOnlyList<Element> selectedEquipment, string parameterName)
     {
         SystemAssignerResult result = new();
 
-        using Transaction transaction = new(document, "Ustaw HC_System");
+        using Transaction transaction = new(document, $"Propagate {parameterName}");
         transaction.Start();
 
         foreach (Element equipment in selectedEquipment)
         {
             result.ProcessedEquipmentCount++;
-            string? hcSystemValue = GetParameterStringValue(equipment, "HC_System");
-            if (string.IsNullOrWhiteSpace(hcSystemValue))
+            string? parameterValue = GetParameterStringValue(equipment, parameterName);
+            if (string.IsNullOrWhiteSpace(parameterValue))
             {
-                result.Messages.Add($"Pominieto urzadzenie {equipment.Id.Value}: brak wartosci HC_System.");
+                result.Messages.Add($"Pominieto urzadzenie {equipment.Id.Value}: brak wartosci parametru {parameterName}.");
                 continue;
             }
 
@@ -39,14 +67,14 @@ public sealed class SystemAssignerService
 
                 foreach (Element element in GetSystemElements(mepSystem))
                 {
-                    Parameter? parameter = element.LookupParameter("HC_System");
+                    Parameter? parameter = element.LookupParameter(parameterName);
                     if (parameter == null || parameter.IsReadOnly || parameter.StorageType != StorageType.String)
                     {
-                        result.Messages.Add($"Element {element.Id.Value}: brak parametru HC_System.");
+                        result.Messages.Add($"Element {element.Id.Value}: brak parametru {parameterName}.");
                         continue;
                     }
 
-                    parameter.Set(hcSystemValue);
+                    parameter.Set(parameterValue);
                     result.ChangedCount++;
                 }
             }

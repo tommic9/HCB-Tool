@@ -13,4 +13,6 @@ public sealed class RenameFamilyContentOptions
     public bool SaveAsCopy { get; init; } = true;
 
     public string OutputFolderPath { get; init; } = string.Empty;
+
+    public IReadOnlyList<string> TargetParameterKeys { get; init; } = [];
 }

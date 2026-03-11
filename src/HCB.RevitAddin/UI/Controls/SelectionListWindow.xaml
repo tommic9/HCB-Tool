@@ -21,6 +21,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -33,15 +35,40 @@
                  Margin="0,16,0,8"
                  TextChanged="SearchTextBox_OnTextChanged" />
 
-        <ComboBox x:Name="FilterGroupComboBox"
+        <StackPanel x:Name="PrimaryFilterPanel"
                   Grid.Row="2"
                   Margin="0,0,0,8"
-                  DisplayMemberPath="DisplayName"
-                  SelectedValuePath="Value"
-                  SelectionChanged="FilterGroupComboBox_OnSelectionChanged"
+                  Visibility="Collapsed">
+            <TextBlock x:Name="PrimaryFilterLabelTextBlock"
+                       Margin="0,0,0,4"
+                       Style="{StaticResource SectionLabelStyle}" />
+            <ComboBox x:Name="FilterGroupComboBox"
+                      DisplayMemberPath="DisplayName"
+                      SelectedValuePath="Value"
+                      SelectionChanged="FilterGroupComboBox_OnSelectionChanged" />
+        </StackPanel>
+
+        <StackPanel x:Name="SecondaryFilterPanel"
+                    Grid.Row="3"
+                    Margin="0,0,0,8"
+                    Visibility="Collapsed">
+            <TextBlock x:Name="SecondaryFilterLabelTextBlock"
+                       Margin="0,0,0,4"
+                       Style="{StaticResource SectionLabelStyle}" />
+            <ComboBox x:Name="SecondaryFilterGroupComboBox"
+                      DisplayMemberPath="DisplayName"
+                      SelectedValuePath="Value"
+                      SelectionChanged="SecondaryFilterGroupComboBox_OnSelectionChanged" />
+        </StackPanel>
+
+        <CheckBox x:Name="ActiveViewCheckBox"
+                  Grid.Row="4"
+                  Margin="0,0,0,8"
+                  Content="Active View"
+                  Checked="ActiveViewCheckBox_OnChecked"
                   Visibility="Collapsed" />
 
-        <GroupBox Grid.Row="3"
+        <GroupBox Grid.Row="5"
                   x:Name="ItemsGroupBox"
                   Padding="10">
             <DockPanel LastChildFill="True">
@@ -58,7 +85,7 @@
         </GroupBox>
 
         <controls:DialogFooterBar x:Name="FooterBar"
-                                  Grid.Row="4"
+                                  Grid.Row="6"
                                   Margin="0,16,0,0"
                                   PrimaryButtonText="Wybierz"
                                   SecondaryButtonText="Anuluj"
@@ -66,3 +93,4 @@
                                   SecondaryButtonClick="CancelButton_OnClick" />
     </Grid>
 </Window>
+

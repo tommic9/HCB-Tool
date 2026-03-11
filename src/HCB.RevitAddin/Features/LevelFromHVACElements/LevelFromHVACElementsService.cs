@@ -35,6 +35,26 @@ public sealed class LevelFromHVACElementsService
             .ToList();
     }
 
+    public IReadOnlyList<string> GetEditableTargetParameterNames(IReadOnlyList<Element> elements)
+    {
+        HashSet<string>? commonNames = null;
+
+        foreach (Element element in elements)
+        {
+            HashSet<string> names = GetEditableTargetParameterNames(element)
+                .ToHashSet(StringComparer.CurrentCultureIgnoreCase);
+
+            commonNames = commonNames == null
+                ? names
+                : commonNames.Intersect(names, StringComparer.CurrentCultureIgnoreCase)
+                    .ToHashSet(StringComparer.CurrentCultureIgnoreCase);
+        }
+
+        return commonNames?
+            .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
+            .ToList() ?? [];
+    }
+
     public LevelFromHvacResult Apply(Document document, IReadOnlyList<Element> elements, string targetParameterName)
     {
         LevelFromHvacResult result = new();
@@ -73,20 +93,21 @@ public sealed class LevelFromHVACElementsService
             return false;
         }
 
-        if (sourceParameter.StorageType != targetParameter.StorageType)
-        {
-            return false;
-        }
-
         try
         {
             if (targetParameter.StorageType == StorageType.String)
             {
-                targetParameter.Set(sourceParameter.AsString() ?? string.Empty);
+                string? textValue = GetSourceLevelText(element, sourceParameter);
+                if (textValue == null)
+                {
+                    return false;
+                }
+
+                targetParameter.Set(textValue);
                 return true;
             }
 
-            if (targetParameter.StorageType == StorageType.ElementId)
+            if (targetParameter.StorageType == StorageType.ElementId && sourceParameter.StorageType == StorageType.ElementId)
             {
                 targetParameter.Set(sourceParameter.AsElementId());
                 return true;
@@ -98,6 +119,33 @@ public sealed class LevelFromHVACElementsService
         }
 
         return false;
+    }
+
+    private static string? GetSourceLevelText(Element element, Parameter sourceParameter)
+    {
+        if (sourceParameter.StorageType == StorageType.String)
+        {
+            string? direct = sourceParameter.AsString();
+            if (!string.IsNullOrWhiteSpace(direct))
+            {
+                return direct.Trim();
+            }
+        }
+
+        if (sourceParameter.StorageType == StorageType.ElementId)
+        {
+            ElementId levelId = sourceParameter.AsElementId();
+            if (levelId == ElementId.InvalidElementId)
+            {
+                return null;
+            }
+
+            Document document = element.Document;
+            return document.GetElement(levelId)?.Name;
+        }
+
+        string? valueString = sourceParameter.AsValueString();
+        return string.IsNullOrWhiteSpace(valueString) ? null : valueString.Trim();
     }
 
     private static BuiltInCategory? GetBuiltInCategory(Element element)

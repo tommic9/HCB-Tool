@@ -13,6 +13,9 @@ public sealed class LevelsService
 
     public LevelsRenameResult RenameLevels(Document document, LevelsRenameOptions options)
     {
+        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(options);
+
         List<Level> levels = new FilteredElementCollector(document)
             .OfClass(typeof(Level))
             .Cast<Level>()
@@ -62,7 +65,13 @@ public sealed class LevelsService
 
     private static string BuildLevelName(Level level, LevelsRenameOptions options)
     {
-        string baseName = ElevationSuffixRegex.Replace(level.Name, string.Empty).TrimEnd();
+        string currentName = level.Name ?? string.Empty;
+        string baseName = ElevationSuffixRegex.Replace(currentName, string.Empty).TrimEnd();
+        if (string.IsNullOrWhiteSpace(baseName))
+        {
+            baseName = "Level";
+        }
+
         double elevationInMeters = UnitUtils.ConvertFromInternalUnits(level.Elevation, UnitTypeId.Meters);
         double roundedElevation = Math.Round(elevationInMeters, options.DecimalPlaces, MidpointRounding.AwayFromZero);
 
@@ -73,7 +82,7 @@ public sealed class LevelsService
         }
 
         string numericFormat = "0" + (options.DecimalPlaces > 0 ? "." + new string('0', options.DecimalPlaces) : string.Empty);
-        string elevationText = roundedElevation.ToString(numericFormat);
+        string elevationText = roundedElevation.ToString(numericFormat, System.Globalization.CultureInfo.InvariantCulture);
 
         if (options.ShowPlusForPositiveValues && roundedElevation > 0)
         {

@@ -62,7 +62,7 @@ public sealed class DuctFittingsAreaService
             LinearDimensions,
             LinearRequiredParams);
 
-        return Calculate(document, profile, options, CalculateLinearDimensions);
+        return Calculate(document, profile, options, CalculateLinearDimensions, "LINEAR");
     }
 
     public DuctFittingsAreaResult CalculateMagicad(Document document, DuctFittingsAreaOptions options)
@@ -75,14 +75,15 @@ public sealed class DuctFittingsAreaService
             MagicadRequiredParams,
             "RLT_DIN_l");
 
-        return Calculate(document, profile, options, CalculateMagicadDimensions);
+        return Calculate(document, profile, options, CalculateMagicadDimensions, "MagiCAD");
     }
 
     private DuctFittingsAreaResult Calculate(
         Document document,
         DuctFittingProfile profile,
         DuctFittingsAreaOptions options,
-        Func<string, Dictionary<string, double>, (double Length, double Perimeter)> calculator)
+        Func<string, Dictionary<string, double>, (double Length, double Perimeter)> calculator,
+        string sourceLabel)
     {
         List<FamilyInstance> fittings = new FilteredElementCollector(document)
             .OfCategory(BuiltInCategory.OST_DuctFitting)
@@ -93,7 +94,9 @@ public sealed class DuctFittingsAreaService
 
         DuctFittingsAreaResult result = new();
 
-        using Transaction transaction = new(document, "Duct Fittings Area");
+        using Transaction transaction = new(document, "Duct Fittings Area")
+        {
+        };
         transaction.Start();
 
         CopyDuctAreas(document, result, options);
@@ -102,18 +105,21 @@ public sealed class DuctFittingsAreaService
         {
             result.ProcessedCount++;
 
+            string category = GetCategoryName(fitting);
+            string familyName = GetFamilyName(fitting);
+            string typeName = GetTypeName(fitting);
+            string size = GetSizeString(fitting);
             string? dimensionType = fitting.LookupParameter(profile.DimensionTypeParameter)?.AsString();
             if (string.IsNullOrWhiteSpace(dimensionType) || !profile.RequiredParams.TryGetValue(dimensionType, out string[]? requiredParams))
             {
-                result.SkippedCount++;
+                AddSkippedRow(result, fitting.Id.Value, category, familyName, typeName, size, sourceLabel, "Brak obslugi typu ksztaltki.");
                 continue;
             }
 
             Dictionary<string, double> values = ReadParameterValues(fitting, profile);
             if (requiredParams.Any(required => !values.ContainsKey(required)))
             {
-                result.SkippedCount++;
-                result.Messages.Add($"Pominięto {fitting.Id.Value}: brak wymaganych parametrów dla typu {dimensionType}.");
+                AddSkippedRow(result, fitting.Id.Value, category, familyName, typeName, size, sourceLabel, $"Brak wymaganych parametrow dla typu {dimensionType}.");
                 continue;
             }
 
@@ -128,22 +134,22 @@ public sealed class DuctFittingsAreaService
                     area = 1.0;
                 }
 
-                Parameter areaParameter = fitting.LookupParameter("HC_Area");
+                Parameter? areaParameter = fitting.LookupParameter("HC_Area");
                 if (areaParameter == null || areaParameter.IsReadOnly)
                 {
-                    result.SkippedCount++;
-                    result.Messages.Add($"Pominięto {fitting.Id.Value}: brak parametru HC_Area.");
+                    AddSkippedRow(result, fitting.Id.Value, category, familyName, typeName, size, sourceLabel, "Brak parametru HC_Area.");
                     continue;
                 }
 
                 SetAreaParameterValue(areaParameter, area);
                 result.UpdatedCount++;
+                result.TotalAreaSquareMeters += area;
+                result.Rows.Add(new DuctFittingsAreaRow(fitting.Id.Value, category, familyName, typeName, size, "Success", area, sourceLabel, string.Empty));
                 result.Messages.Add($"Element {fitting.Id.Value}: HC_Area = {area:0.00}");
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                result.SkippedCount++;
-                result.Messages.Add($"Pominięto {fitting.Id.Value}: {ex.Message}");
+                AddSkippedRow(result, fitting.Id.Value, category, familyName, typeName, size, sourceLabel, exception.Message);
             }
         }
 
@@ -153,29 +159,30 @@ public sealed class DuctFittingsAreaService
 
     private static void CopyDuctAreas(Document document, DuctFittingsAreaResult result, DuctFittingsAreaOptions options)
     {
-        List<Autodesk.Revit.DB.Mechanical.Duct> ducts = new FilteredElementCollector(document)
+        List<Duct> ducts = new FilteredElementCollector(document)
             .OfCategory(BuiltInCategory.OST_DuctCurves)
             .WhereElementIsNotElementType()
-            .OfType<Autodesk.Revit.DB.Mechanical.Duct>()
+            .OfType<Duct>()
             .ToList();
 
-        foreach (Autodesk.Revit.DB.Mechanical.Duct duct in ducts)
+        foreach (Duct duct in ducts)
         {
             result.ProcessedCount++;
 
-            Parameter areaParameter = duct.LookupParameter("HC_Area");
+            string category = GetCategoryName(duct);
+            string typeName = GetTypeName(duct);
+            string size = GetSizeString(duct);
+            Parameter? areaParameter = duct.LookupParameter("HC_Area");
             if (areaParameter == null || areaParameter.IsReadOnly)
             {
-                result.SkippedCount++;
-                result.Messages.Add($"Pominieto kanal {duct.Id.Value}: brak parametru HC_Area.");
+                AddSkippedRow(result, duct.Id.Value, category, string.Empty, typeName, size, "Duct Surface", "Brak parametru HC_Area.");
                 continue;
             }
 
-            Parameter sourceAreaParameter = duct.get_Parameter(BuiltInParameter.RBS_CURVE_SURFACE_AREA);
+            Parameter? sourceAreaParameter = duct.get_Parameter(BuiltInParameter.RBS_CURVE_SURFACE_AREA);
             if (sourceAreaParameter == null || sourceAreaParameter.StorageType != StorageType.Double)
             {
-                result.SkippedCount++;
-                result.Messages.Add($"Pominieto kanal {duct.Id.Value}: brak parametru powierzchni.");
+                AddSkippedRow(result, duct.Id.Value, category, string.Empty, typeName, size, "Duct Surface", "Brak parametru powierzchni.");
                 continue;
             }
 
@@ -188,8 +195,51 @@ public sealed class DuctFittingsAreaService
 
             SetAreaParameterValue(areaParameter, roundedArea);
             result.UpdatedCount++;
+            result.TotalAreaSquareMeters += roundedArea;
+            result.Rows.Add(new DuctFittingsAreaRow(duct.Id.Value, category, string.Empty, typeName, size, "Success", roundedArea, "Duct Surface", string.Empty));
             result.Messages.Add($"Kanal {duct.Id.Value}: HC_Area = {roundedArea:0.###}");
         }
+    }
+
+    private static void AddSkippedRow(
+        DuctFittingsAreaResult result,
+        long elementId,
+        string category,
+        string familyName,
+        string typeName,
+        string size,
+        string source,
+        string reason)
+    {
+        result.SkippedCount++;
+        result.Rows.Add(new DuctFittingsAreaRow(elementId, category, familyName, typeName, size, "Skipped", null, source, reason));
+        result.Messages.Add($"Pominieto {elementId}: {reason}");
+    }
+
+    private static string GetCategoryName(Element element)
+    {
+        return element.Category?.Name ?? string.Empty;
+    }
+
+    private static string GetFamilyName(Element element)
+    {
+        return element is FamilyInstance familyInstance
+            ? familyInstance.Symbol?.FamilyName ?? string.Empty
+            : string.Empty;
+    }
+
+    private static string GetTypeName(Element element)
+    {
+        return element is FamilyInstance familyInstance
+            ? familyInstance.Symbol?.Name ?? element.Name ?? string.Empty
+            : element.Name ?? string.Empty;
+    }
+
+    private static string GetSizeString(Element element)
+    {
+        return element.LookupParameter("Size")?.AsString()
+            ?? element.get_Parameter(BuiltInParameter.RBS_CALCULATED_SIZE)?.AsString()
+            ?? string.Empty;
     }
 
     private static Dictionary<string, double> ReadParameterValues(FamilyInstance fitting, DuctFittingProfile profile)
@@ -198,14 +248,14 @@ public sealed class DuctFittingsAreaService
 
         foreach (string dimension in profile.Dimensions)
         {
-            Parameter parameter = fitting.LookupParameter(profile.DimensionPrefix + dimension);
+            Parameter? parameter = fitting.LookupParameter(profile.DimensionPrefix + dimension);
             if (parameter?.StorageType == StorageType.Double)
             {
                 values[dimension] = parameter.AsDouble();
             }
         }
 
-        Parameter angleParameter = fitting.LookupParameter(profile.AngleParameter);
+        Parameter? angleParameter = fitting.LookupParameter(profile.AngleParameter);
         if (angleParameter?.StorageType == StorageType.Double)
         {
             values[profile.AngleParameter] = angleParameter.AsDouble();
@@ -213,7 +263,7 @@ public sealed class DuctFittingsAreaService
 
         if (!string.IsNullOrWhiteSpace(profile.ExtraDoubleParameter))
         {
-            Parameter extraParameter = fitting.LookupParameter(profile.ExtraDoubleParameter);
+            Parameter? extraParameter = fitting.LookupParameter(profile.ExtraDoubleParameter);
             if (extraParameter?.StorageType == StorageType.Double)
             {
                 values[profile.ExtraDoubleParameter] = extraParameter.AsDouble();
@@ -263,7 +313,7 @@ public sealed class DuctFittingsAreaService
             "HS" => CalculateLinearHs(p),
             "SU" => (Math.Sqrt(Math.Pow(p["L"], 2) + Math.Pow(p["R"], 2)), 2 * (p["A"] + p["B"])),
             "TD" => (Math.Sqrt(Math.Pow(p["L"], 2) + Math.Pow(p["R"], 2)), 2 * (p["A"] + p["B"])),
-            _ => throw new InvalidOperationException($"Nieznany typ kształtki: {type}")
+            _ => throw new InvalidOperationException($"Nieznany typ ksztaltki: {type}")
         };
     }
 
@@ -290,24 +340,20 @@ public sealed class DuctFittingsAreaService
             "HS" => CalculateMagicadHs(p),
             "SU" => (Math.Sqrt(Math.Pow(p["l"], 2) + Math.Pow(p["r"], 2)), 2 * (p["a"] + p["b"])),
             "TD" => (Math.Sqrt(Math.Pow(p["l"], 2) + Math.Pow(p["r"], 2)), 2 * (p["a"] + p["b"])),
-            _ => throw new InvalidOperationException($"Nieznany typ kształtki: {type}")
+            _ => throw new InvalidOperationException($"Nieznany typ ksztaltki: {type}")
         };
     }
 
     private static (double Length, double Perimeter) CalculateLinearOvalA(Dictionary<string, double> p)
     {
-        double perimeter = p["A"] + p["B"] >= (2 * Math.PI * Math.Sqrt((2 * p["D"] + 2 * p["C"]) / 2)) / 2
-            ? 2 * (p["A"] + p["B"])
-            : 2 * Math.PI * Math.Sqrt((2 * p["D"] + 2 * p["C"]) / 2);
+        double perimeter = p["A"] + p["B"] >= (2 * Math.PI * Math.Sqrt((2 * p["D"] + 2 * p["C"]) / 2)) / 2 ? 2 * (p["A"] + p["B"]) : 2 * Math.PI * Math.Sqrt((2 * p["D"] + 2 * p["C"]) / 2);
         double length = Math.Sqrt(Math.Pow(p["L"], 2) + Math.Pow(Math.Max(p["B"] - p["D"] + p["E"], Math.Max(p["A"] - p["D"] + p["F"], Math.Max(p["E"], p["F"]))), 2));
         return (length, perimeter);
     }
 
     private static (double Length, double Perimeter) CalculateMagicadOvalA(Dictionary<string, double> p)
     {
-        double perimeter = p["a"] + p["b"] >= (2 * Math.PI * Math.Sqrt((2 * p["d"] + 2 * p["c"]) / 2)) / 2
-            ? 2 * (p["a"] + p["b"])
-            : 2 * Math.PI * Math.Sqrt((2 * p["d"] + 2 * p["c"]) / 2);
+        double perimeter = p["a"] + p["b"] >= (2 * Math.PI * Math.Sqrt((2 * p["d"] + 2 * p["c"]) / 2)) / 2 ? 2 * (p["a"] + p["b"]) : 2 * Math.PI * Math.Sqrt((2 * p["d"] + 2 * p["c"]) / 2);
         double length = Math.Sqrt(Math.Pow(p["l"], 2) + Math.Pow(Math.Max(p["b"] - p["d"] + p["e"], Math.Max(p["a"] - p["d"] + p["f"], Math.Max(p["e"], p["f"]))), 2));
         return (length, perimeter);
     }
@@ -379,9 +425,7 @@ public sealed class DuctFittingsAreaService
     private static (double Length, double Perimeter) CalculateLinearHs(Dictionary<string, double> p)
     {
         double m = Math.Max(p["M"], 100);
-        double perimeter = p["B"] >= p["D"] + m + p["H"]
-            ? 2 * (p["A"] + p["B"])
-            : 2 * (p["C"] + p["D"] + m - p["H"]);
+        double perimeter = p["B"] >= p["D"] + m + p["H"] ? 2 * (p["A"] + p["B"]) : 2 * (p["C"] + p["D"] + m - p["H"]);
         double length = Math.Sqrt(Math.Pow(p["L"], 2) + Math.Pow(p["B"] >= p["D"] + m + p["H"] ? p["B"] - p["H"] - m - p["D"] + p["E"] : p["E"], 2));
         return (length, perimeter);
     }
@@ -389,9 +433,7 @@ public sealed class DuctFittingsAreaService
     private static (double Length, double Perimeter) CalculateMagicadHs(Dictionary<string, double> p)
     {
         double m = Math.Max(p["m"], 100);
-        double perimeter = p["b"] >= p["d"] + m + p["h"]
-            ? 2 * (p["a"] + p["b"])
-            : 2 * (p["c"] + p["d"] + m - p["h"]);
+        double perimeter = p["b"] >= p["d"] + m + p["h"] ? 2 * (p["a"] + p["b"]) : 2 * (p["c"] + p["d"] + m - p["h"]);
         double length = Math.Sqrt(Math.Pow(p["l"], 2) + Math.Pow(p["b"] >= p["d"] + m + p["h"] ? p["b"] - p["h"] - m - p["d"] + p["e"] : p["e"], 2));
         return (length, perimeter);
     }

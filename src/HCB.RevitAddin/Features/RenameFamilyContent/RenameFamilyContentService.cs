@@ -21,10 +21,13 @@ public sealed class RenameFamilyContentService
             Directory.CreateDirectory(options.OutputFolderPath);
         }
 
+        HashSet<string> selectedTargets = options.TargetParameterKeys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        bool restrictToTargets = selectedTargets.Count > 0;
+
         List<WithoutOpenOperationLogEntry> entries = new(normalizedPaths.Count);
         foreach (string familyPath in normalizedPaths)
         {
-            entries.Add(RenameSingle(application, familyPath, options));
+            entries.Add(RenameSingle(application, familyPath, options, selectedTargets, restrictToTargets));
         }
 
         return new RenameFamilyContentResult
@@ -33,7 +36,12 @@ public sealed class RenameFamilyContentService
         };
     }
 
-    private WithoutOpenOperationLogEntry RenameSingle(Application application, string familyPath, RenameFamilyContentOptions options)
+    private WithoutOpenOperationLogEntry RenameSingle(
+        Application application,
+        string familyPath,
+        RenameFamilyContentOptions options,
+        IReadOnlySet<string> selectedTargets,
+        bool restrictToTargets)
     {
         DateTime startedAt = DateTime.UtcNow;
 
@@ -56,6 +64,7 @@ public sealed class RenameFamilyContentService
                 FamilyManager familyManager = document.FamilyManager;
                 int renamedParameters = 0;
                 int protectedParameters = 0;
+                int skippedBySelection = 0;
 
                 using Transaction transaction = new(document, "Rename Family Parameters");
                 transaction.Start();
@@ -67,13 +76,19 @@ public sealed class RenameFamilyContentService
 
                 foreach (FamilyParameter parameter in familyManager.Parameters)
                 {
+                    string currentName = parameter.Definition?.Name ?? string.Empty;
+                    if (restrictToTargets && !selectedTargets.Contains(BuildTargetKey(familyPath, currentName)))
+                    {
+                        skippedBySelection++;
+                        continue;
+                    }
+
                     if (!CanRenameParameter(parameter))
                     {
                         protectedParameters++;
                         continue;
                     }
 
-                    string currentName = parameter.Definition?.Name ?? string.Empty;
                     string targetName = ApplyRenameRule(currentName, options);
                     if (string.IsNullOrWhiteSpace(targetName) || string.Equals(currentName, targetName, StringComparison.Ordinal))
                     {
@@ -98,11 +113,24 @@ public sealed class RenameFamilyContentService
                     string message = protectedParameters > 0
                         ? $"Brak zmian do zapisania. Pominieto parametry chronione: {protectedParameters}."
                         : "Brak zmian do zapisania.";
+
+                    if (restrictToTargets)
+                    {
+                        message += $" Poza zakresem zaznaczenia: {skippedBySelection}.";
+                    }
+
                     return CreateLog(familyPath, WithoutOpenOperationStatus.Skipped, message, startedAt);
                 }
 
                 string savedPath = SaveFamily(document, familyPath, options);
-                return CreateLog(familyPath, WithoutOpenOperationStatus.Success, $"Zmieniono parametry: {renamedParameters}. Pominieto chronione: {protectedParameters}. Zapis: {savedPath}", startedAt, savedPath);
+                string successMessage = $"Zmieniono parametry: {renamedParameters}. Pominieto chronione: {protectedParameters}.";
+                if (restrictToTargets)
+                {
+                    successMessage += $" Poza zakresem zaznaczenia: {skippedBySelection}.";
+                }
+
+                successMessage += $" Zapis: {savedPath}";
+                return CreateLog(familyPath, WithoutOpenOperationStatus.Success, successMessage, startedAt, savedPath);
             }
             finally
             {
@@ -116,6 +144,11 @@ public sealed class RenameFamilyContentService
         {
             return CreateLog(familyPath, WithoutOpenOperationStatus.Failed, exception.Message, startedAt);
         }
+    }
+
+    public static string BuildTargetKey(string filePath, string parameterName)
+    {
+        return $"{filePath}|{parameterName}";
     }
 
     private static bool CanRenameParameter(FamilyParameter parameter)
