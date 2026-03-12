@@ -1,4 +1,5 @@
 /.vs/
+/.nuget/
 **/bin/
 **/obj/
 /HCB_Tools/
@@ -7,3 +8,13 @@
 /build-r25-diag.log
 /Baza wiedzy.md
 /Linki i wycztyne.md
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/COPILOT.md
+/COPILOT-INSTRUCTIONS.md
+/.cursor/
+/.cursorrules
+/.windsurf/
+/.roo/
+/.ai/
