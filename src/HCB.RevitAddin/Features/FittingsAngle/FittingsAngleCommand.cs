@@ -28,34 +28,70 @@ public sealed class FittingsAngleCommand : IExternalCommand
             return Result.Cancelled;
         }
 
+        var selectedCategories = categoriesWindow.SelectedValues.Cast<string>().ToList();
+
         var availableParameterNames = service.GetAvailableAngleParameterNames(
             document,
             uiDocument.Selection.GetElementIds(),
-            categoriesWindow.SelectedValues.Cast<string>().ToList());
+            selectedCategories);
 
-        SelectionListWindow parameterWindow = new(
+        SelectionListWindow sourceParameterWindow = new(
             "Fittings Angle",
             "Wybierz dodatkowy parametr kata",
             new[] { new SelectionListItem(FittingsAngleService.NoExtraParameterOption, "Brak dodatkowego parametru") }
                 .Concat(availableParameterNames.Select(name => new SelectionListItem(name, name))),
             new object[] { FittingsAngleService.NoExtraParameterOption },
-            "Uruchom",
+            "Dalej",
             "Wybierz opcjonalny dodatkowy parametr zrodlowy. Jesli zaznaczysz kilka pozycji, narzedzie uzyje pierwszej.");
 
-        if (parameterWindow.ShowDialog() != true)
+        if (sourceParameterWindow.ShowDialog() != true)
         {
             return Result.Cancelled;
         }
 
-        string? extraParameterName = parameterWindow.SelectedValues
+        string? extraParameterName = sourceParameterWindow.SelectedValues
             .Cast<string>()
             .FirstOrDefault();
+
+        var availableTargetParameters = service.GetAvailableTargetParameterNames(
+            document,
+            uiDocument.Selection.GetElementIds(),
+            selectedCategories);
+
+        if (availableTargetParameters.Count == 0)
+        {
+            TaskDialog.Show("Fittings Angle", "Nie znaleziono zadnego zapisywalnego parametru typu Angle dla wybranych elementow.");
+            return Result.Cancelled;
+        }
+
+        object[] defaultTargetSelection = availableTargetParameters
+            .Any(name => string.Equals(name, FittingsAngleService.DefaultTargetParameterName, System.StringComparison.OrdinalIgnoreCase))
+            ? new object[] { availableTargetParameters.First(name => string.Equals(name, FittingsAngleService.DefaultTargetParameterName, System.StringComparison.OrdinalIgnoreCase)) }
+            : new object[] { availableTargetParameters[0] };
+
+        SelectionListWindow targetParameterWindow = new(
+            "Fittings Angle",
+            "Wybierz parametr docelowy",
+            availableTargetParameters.Select(name => new SelectionListItem(name, name)),
+            defaultTargetSelection,
+            "Uruchom",
+            "Wybierz parametr docelowy typu Angle. Narzedzie wpisze do niego zaokraglony kat pobrany z elementu. Jesli zaznaczysz kilka pozycji, narzedzie uzyje pierwszej.");
+
+        if (targetParameterWindow.ShowDialog() != true)
+        {
+            return Result.Cancelled;
+        }
+
+        string targetParameterName = targetParameterWindow.SelectedValues
+            .Cast<string>()
+            .First();
 
         var result = service.Apply(
             document,
             uiDocument.Selection.GetElementIds(),
-            categoriesWindow.SelectedValues.Cast<string>().ToList(),
-            extraParameterName);
+            selectedCategories,
+            extraParameterName,
+            targetParameterName);
 
         if (result.FailedElementIds.Count > 0)
         {
@@ -64,7 +100,7 @@ public sealed class FittingsAngleCommand : IExternalCommand
 
         TaskDialog.Show(
             "Fittings Angle",
-            $"Kandydaci: {result.CandidateCount}\nZaktualizowane: {result.UpdatedCount}\nBrak zrodla kata: {result.MissingSourceCount}\nBrak lub blad HC_Kat: {result.MissingTargetCount}");
+            $"Parametr docelowy: {targetParameterName}\n\nKandydaci: {result.CandidateCount}\nZaktualizowane: {result.UpdatedCount}\nBrak zrodla kata: {result.MissingSourceCount}\nBrak lub blad parametru docelowego: {result.MissingTargetCount}");
 
         return Result.Succeeded;
     }

@@ -8,7 +8,7 @@ namespace HCB.RevitAddin.Features.FittingsAngle;
 
 public sealed class FittingsAngleService
 {
-    private const string TargetSharedParameterName = "HC_Kąt";
+    public const string DefaultTargetParameterName = "HC_K\u0105t";
     public const string NoExtraParameterOption = "__NONE__";
     private static readonly string[] PredefinedAngleParameters = ["Angle", "angle", "w", "arc", "RSen_P_c01_angle"];
 
@@ -40,14 +40,44 @@ public sealed class FittingsAngleService
             .Where(IsAngleParameter)
             .Select(parameter => parameter.Definition?.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Where(name => !string.Equals(name, TargetSharedParameterName, StringComparison.OrdinalIgnoreCase))
+            .Where(name => !string.Equals(name, DefaultTargetParameterName, StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
             .Cast<string>()
             .ToList();
     }
 
-    public FittingsAngleResult Apply(Document document, IEnumerable<ElementId> selectedElementIds, IReadOnlyList<string> selectedCategoryNames, string? extraAngleParameterName)
+    public IReadOnlyList<string> GetAvailableTargetParameterNames(Document document, IEnumerable<ElementId> selectedElementIds, IReadOnlyList<string> selectedCategoryNames)
+    {
+        List<BuiltInCategory> selectedCategories = selectedCategoryNames
+            .Where(CategoryOptions.ContainsKey)
+            .Select(name => CategoryOptions[name])
+            .ToList();
+
+        if (selectedCategories.Count == 0)
+        {
+            return [];
+        }
+
+        return GetCandidateElements(document, selectedElementIds, selectedCategories)
+            .SelectMany(element => element.Parameters.Cast<Parameter>())
+            .Where(parameter => parameter.Definition != null)
+            .Where(parameter => !parameter.IsReadOnly)
+            .Where(parameter => parameter.StorageType == StorageType.Double)
+            .Where(IsAngleParameter)
+            .Select(parameter => parameter.Definition!.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+    }
+
+    public FittingsAngleResult Apply(
+        Document document,
+        IEnumerable<ElementId> selectedElementIds,
+        IReadOnlyList<string> selectedCategoryNames,
+        string? extraAngleParameterName,
+        string targetParameterName)
     {
         List<BuiltInCategory> selectedCategories = selectedCategoryNames
             .Where(CategoryOptions.ContainsKey)
@@ -88,7 +118,7 @@ public sealed class FittingsAngleService
                 continue;
             }
 
-            Parameter? targetParameter = element.LookupParameter(TargetSharedParameterName);
+            Parameter? targetParameter = element.LookupParameter(targetParameterName);
             if (targetParameter == null || targetParameter.IsReadOnly || targetParameter.StorageType != StorageType.Double)
             {
                 result.MissingTargetCount++;
