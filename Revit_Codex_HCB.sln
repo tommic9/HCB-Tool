@@ -4,6 +4,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HCB.RevitAddin", "src\HCB.RevitAddin\HCB.RevitAddin.csproj", "{9A8F5E22-94B6-4D9D-B0E0-4EF2BF2D7D11}"
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "HCB.RevitInstaller", "src\HCB.RevitInstaller\HCB.RevitInstaller.wixproj", "{84241EAB-265E-4086-9579-57F83DB90224}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug R25|x64 = Debug R25|x64
@@ -20,6 +22,14 @@ Global
 		{9A8F5E22-94B6-4D9D-B0E0-4EF2BF2D7D11}.Release R25|x64.Build.0 = Release R25|x64
 		{9A8F5E22-94B6-4D9D-B0E0-4EF2BF2D7D11}.Release R26|x64.ActiveCfg = Release R26|x64
 		{9A8F5E22-94B6-4D9D-B0E0-4EF2BF2D7D11}.Release R26|x64.Build.0 = Release R26|x64
+		{84241EAB-265E-4086-9579-57F83DB90224}.Debug R25|x64.ActiveCfg = Debug R25|x64
+		{84241EAB-265E-4086-9579-57F83DB90224}.Debug R25|x64.Build.0 = Debug R25|x64
+		{84241EAB-265E-4086-9579-57F83DB90224}.Debug R26|x64.ActiveCfg = Debug R26|x64
+		{84241EAB-265E-4086-9579-57F83DB90224}.Debug R26|x64.Build.0 = Debug R26|x64
+		{84241EAB-265E-4086-9579-57F83DB90224}.Release R25|x64.ActiveCfg = Release R25|x64
+		{84241EAB-265E-4086-9579-57F83DB90224}.Release R25|x64.Build.0 = Release R25|x64
+		{84241EAB-265E-4086-9579-57F83DB90224}.Release R26|x64.ActiveCfg = Release R26|x64
+		{84241EAB-265E-4086-9579-57F83DB90224}.Release R26|x64.Build.0 = Release R26|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -28,3 +38,4 @@ Global
 		SolutionGuid = {97CC0B58-0D47-4E5D-9C75-2C7C06F3F8E0}
 	EndGlobalSection
 EndGlobal
+

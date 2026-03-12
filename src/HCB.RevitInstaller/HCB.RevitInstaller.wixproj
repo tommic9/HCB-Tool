@@ -1,0 +1,49 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <Configurations>Debug R25;Debug R26;Release R25;Release R26</Configurations>
+    <Platforms>x64</Platforms>
+    <OutputType>Package</OutputType>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <NoWarn>$(NoWarn);WIX1149</NoWarn>
+    <SuppressValidation>true</SuppressValidation>
+    <RevitYear Condition="'$(RevitYear)' == '' and $(Configuration.Contains('R25'))">2025</RevitYear>
+    <RevitYear Condition="'$(RevitYear)' == '' and $(Configuration.Contains('R26'))">2026</RevitYear>
+    <RevitYear Condition="'$(RevitYear)' == ''">2025</RevitYear>
+    <InstallerProductVersion Condition="'$(InstallerProductVersion)' == ''">1.0.0</InstallerProductVersion>
+    <UpgradeCode Condition="'$(RevitYear)' == '2025'">C20F0BE8-908B-42D1-B5B4-7F83A5D96B37</UpgradeCode>
+    <UpgradeCode Condition="'$(RevitYear)' == '2026'">8557F317-CFB5-4CB1-90A5-C3BA7E60842D</UpgradeCode>
+    <ManifestComponentGuid Condition="'$(RevitYear)' == '2025'">B424AF23-2B8E-4E1A-AFF0-7BF1F957FC87</ManifestComponentGuid>
+    <ManifestComponentGuid Condition="'$(RevitYear)' == '2026'">1F053A6A-62F3-4D55-9533-963EAC5A9960</ManifestComponentGuid>
+    <AddinBuildOutputDir>$(MSBuildThisFileDirectory)..\HCB.RevitAddin\bin\x64\$(Configuration)</AddinBuildOutputDir>
+    <InstallerPayloadRoot>$(MSBuildProjectDirectory)\obj\$(Configuration)\Payload\Revit $(RevitYear)</InstallerPayloadRoot>
+    <InstallerPayloadAddinDir>$(InstallerPayloadRoot)\HCB.RevitAddin</InstallerPayloadAddinDir>
+    <InstallerManifestPath>$(InstallerPayloadRoot)\HCB.RevitAddin.addin</InstallerManifestPath>
+    <DefineConstants>$(DefineConstants);RevitYear=$(RevitYear);InstallerPayloadRoot=$(InstallerPayloadRoot);InstallerPayloadAddinDir=$(InstallerPayloadAddinDir);InstallerManifestPath=$(InstallerManifestPath);InstallerProductVersion=$(InstallerProductVersion);UpgradeCode=$(UpgradeCode);ManifestComponentGuid=$(ManifestComponentGuid)</DefineConstants>
+  </PropertyGroup>
+
+  <Target Name="BuildAddinPayload" BeforeTargets="BeforeBuild">
+    <MSBuild Projects="..\HCB.RevitAddin\HCB.RevitAddin.csproj"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);Platform=x64;DeployOnBuild=false;DeployRevitAddin=false" />
+
+    <RemoveDir Directories="$(InstallerPayloadRoot)" Condition="Exists('$(InstallerPayloadRoot)')" />
+    <MakeDir Directories="$(InstallerPayloadAddinDir)" />
+
+    <ItemGroup>
+      <AddinPayloadFiles Include="$(AddinBuildOutputDir)\**\*"
+                         Exclude="$(AddinBuildOutputDir)\publish\**\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(AddinPayloadFiles)"
+          DestinationFiles="@(AddinPayloadFiles->'$(InstallerPayloadAddinDir)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+
+    <WriteLinesToFile
+      File="$(InstallerManifestPath)"
+      Overwrite="true"
+      Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xD;&#xA;&lt;RevitAddIns&gt;&#xD;&#xA;  &lt;AddIn Type=&quot;Application&quot;&gt;&#xD;&#xA;    &lt;Name&gt;HCB Addin&lt;/Name&gt;&#xD;&#xA;    &lt;Assembly&gt;HCB.RevitAddin\HCB.RevitAddin.dll&lt;/Assembly&gt;&#xD;&#xA;    &lt;AddInId&gt;8B1D4E5F-AC07-47BA-A4A1-6E52B6B06B91&lt;/AddInId&gt;&#xD;&#xA;    &lt;FullClassName&gt;HCB.RevitAddin.App&lt;/FullClassName&gt;&#xD;&#xA;    &lt;VendorId&gt;HCB&lt;/VendorId&gt;&#xD;&#xA;    &lt;VendorDescription&gt;HCB Revit tools&lt;/VendorDescription&gt;&#xD;&#xA;  &lt;/AddIn&gt;&#xD;&#xA;&lt;/RevitAddIns&gt;" />
+
+    <Error Condition="!Exists('$(InstallerManifestPath)')"
+           Text="Installer manifest not found: $(InstallerManifestPath)" />
+  </Target>
+</Project>
