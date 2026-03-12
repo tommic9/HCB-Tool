@@ -63,6 +63,13 @@
                               SelectedValuePath="Value"
                               SelectionChanged="SourceFilters_OnSelectionChanged"
                               DockPanel.Dock="Top" />
+                    <CheckBox x:Name="SourceActiveViewCheckBox"
+                              Margin="0,0,0,8"
+                              Content="Active View"
+                              Visibility="Collapsed"
+                              Checked="SourceActiveViewCheckBox_OnChecked"
+                              Unchecked="SourceActiveViewCheckBox_OnUnchecked"
+                              DockPanel.Dock="Top" />
                     <ListBox x:Name="SourceViewsListBox"
                              DisplayMemberPath="DisplayName"
                              SelectionChanged="SourceViewsListBox_OnSelectionChanged" />
@@ -130,6 +137,13 @@
                               DisplayMemberPath="DisplayName"
                               SelectedValuePath="Value"
                               SelectionChanged="DestinationFilters_OnSelectionChanged"
+                              DockPanel.Dock="Top" />
+                    <CheckBox x:Name="DestinationActiveViewCheckBox"
+                              Margin="0,0,0,8"
+                              Content="Active View"
+                              Visibility="Collapsed"
+                              Checked="DestinationActiveViewCheckBox_OnChecked"
+                              Unchecked="DestinationActiveViewCheckBox_OnUnchecked"
                               DockPanel.Dock="Top" />
                     <controls:SelectionActionsBar DockPanel.Dock="Top"
                                                   Margin="0,0,0,8"
