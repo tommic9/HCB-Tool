@@ -1,0 +1,140 @@
+<Window x:Class="HCB.RevitAddin.UI.Controls.ReportPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Report Preview"
+        Width="980"
+        Height="720"
+        MinWidth="760"
+        MinHeight="560"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <DockPanel>
+            <TextBlock x:Name="TitleTextBlock"
+                       Style="{StaticResource SectionTitleStyle}"
+                       DockPanel.Dock="Left" />
+            <Button x:Name="ExportButton"
+                    Width="120"
+                    Content="Export CSV"
+                    HorizontalAlignment="Right"
+                    Click="ExportButton_OnClick" />
+        </DockPanel>
+
+        <TextBlock x:Name="SummaryTextBlock"
+                   Grid.Row="1"
+                   Margin="0,12,0,8"
+                   Style="{StaticResource StatusTextStyle}"
+                   TextWrapping="Wrap" />
+
+        <Grid Grid.Row="2"
+              Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="190" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="Kolumna"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0" />
+            <ComboBox x:Name="FilterColumnComboBox"
+                      Grid.Column="1"
+                      DisplayMemberPath="DisplayName"
+                      SelectedValuePath="Value"
+                      SelectionChanged="FilterColumnComboBox_OnSelectionChanged" />
+            <TextBlock Grid.Column="3"
+                       Text="Filtr"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0" />
+            <ComboBox x:Name="FilterValueComboBox"
+                      Grid.Column="4"
+                      MinWidth="260"
+                      IsEditable="True"
+                      IsTextSearchEnabled="False"
+                      StaysOpenOnEdit="True"
+                      SelectionChanged="FilterValueComboBox_OnSelectionChanged"
+                      KeyUp="FilterValueComboBox_OnKeyUp"
+                      LostFocus="FilterValueComboBox_OnLostFocus" />
+        </Grid>
+
+        <DataGrid x:Name="ReportDataGrid"
+                  Grid.Row="3"
+                  AutoGenerateColumns="True"
+                  IsReadOnly="True"
+                  HeadersVisibility="Column"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionMode="Extended"
+                  SelectionChanged="ReportDataGrid_OnSelectionChanged"
+                  MouseDoubleClick="ReportDataGrid_OnMouseDoubleClick"
+                  AutoGeneratingColumn="ReportDataGrid_OnAutoGeneratingColumn"
+                  GridLinesVisibility="Horizontal"
+                  RowHeaderWidth="0"
+                  MinRowHeight="32" />
+
+        <Border Grid.Row="4"
+                Margin="0,12,0,0"
+                Padding="12,10"
+                Background="#F6F8FB"
+                BorderBrush="#D8E0EC"
+                BorderThickness="1"
+                CornerRadius="6"
+                Visibility="Collapsed"
+                x:Name="FooterSummaryBorder">
+            <TextBlock x:Name="FooterSummaryTextBlock"
+                       Style="{StaticResource StatusTextStyle}"
+                       TextWrapping="Wrap" />
+        </Border>
+
+        <DockPanel Grid.Row="5"
+                   Margin="0,16,0,0">
+            <TextBlock x:Name="RowsCountTextBlock"
+                       Style="{StaticResource StatusTextStyle}"
+                       VerticalAlignment="Center" />
+            <Button x:Name="OpenLocationButton"
+                    Width="132"
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
+                    DockPanel.Dock="Right"
+                    Content="Otworz lokalizacje"
+                    Click="OpenLocationButton_OnClick" />
+            <Button x:Name="BatchActionButton"
+                    Width="140"
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
+                    DockPanel.Dock="Right"
+                    Visibility="Collapsed"
+                    Click="BatchActionButton_OnClick" />
+            <Button x:Name="RowActionButton"
+                    Width="140"
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
+                    DockPanel.Dock="Right"
+                    Visibility="Collapsed"
+                    Click="RowActionButton_OnClick" />
+            <Button Width="96"
+                    Content="Zamknij"
+                    HorizontalAlignment="Right"
+                    DockPanel.Dock="Right"
+                    Click="CloseButton_OnClick" />
+        </DockPanel>
+    </Grid>
+</Window>

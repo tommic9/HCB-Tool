@@ -24,14 +24,23 @@ public sealed class RenameViewsCommand : IExternalCommand
 
         if (views.Count == 0)
         {
+            List<View> availableViews = new FilteredElementCollector(document)
+                .OfClass(typeof(View))
+                .Cast<View>()
+                .Where(view => view is not ViewSheet)
+                .ToList();
+
             SelectionListWindow picker = new(
                 "Zmiana nazw widokow",
                 "Wybierz widoki",
-                new FilteredElementCollector(document)
-                    .OfClass(typeof(View))
-                    .Cast<View>()
-                    .Where(view => view is not ViewSheet)
-                    .Select(view => new SelectionListItem(view, view.Name)));
+                availableViews.Select(ToViewSelectionItem),
+                [],
+                "Wybierz",
+                null,
+                availableViews.Contains(uiDocument.ActiveView) ? uiDocument.ActiveView : null,
+                "Active View",
+                "ViewType",
+                "Type");
 
             if (picker.ShowDialog() != true)
             {
@@ -62,5 +71,14 @@ public sealed class RenameViewsCommand : IExternalCommand
         }
 
         return $"{summary}\n\nSzczegoly:\n{string.Join("\n", result.Messages.Take(12))}";
+    }
+
+    private static SelectionListItem ToViewSelectionItem(View view)
+    {
+        return new SelectionListItem(
+            view,
+            view.Name,
+            view.ViewType.ToString(),
+            view.IsTemplate ? "Template" : "View");
     }
 }

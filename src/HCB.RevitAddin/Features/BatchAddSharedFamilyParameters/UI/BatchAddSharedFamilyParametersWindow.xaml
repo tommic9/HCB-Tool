@@ -1,0 +1,131 @@
+<Window x:Class="HCB.RevitAddin.Features.BatchAddSharedFamilyParameters.UI.BatchAddSharedFamilyParametersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Add Shared Family Parameters"
+        Width="720"
+        Height="700"
+        MinWidth="640"
+        MinHeight="620"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Dodaj shared parameters do rodzin"
+                   Style="{StaticResource SectionTitleStyle}" />
+
+        <GroupBox Grid.Row="1"
+                  Margin="0,16,0,16"
+                  Header="Plik zrodlowy">
+            <TextBox x:Name="SharedParameterFileTextBox"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     VerticalContentAlignment="Top"
+                     MinHeight="52" />
+        </GroupBox>
+
+        <GroupBox Grid.Row="2"
+                  Header="Parametry do dodania">
+            <DockPanel LastChildFill="True">
+                <controls:SelectionActionsBar DockPanel.Dock="Top"
+                                              Margin="0,0,0,8"
+                                              LeftButtonText="Wszystkie"
+                                              RightButtonText="Brak"
+                                              LeftButtonClick="SelectAllButton_OnClick"
+                                              RightButtonClick="SelectNoneButton_OnClick" />
+                <ListBox x:Name="ParametersListBox"
+                         DisplayMemberPath="DisplayName"
+                         SelectionMode="Extended" />
+            </DockPanel>
+        </GroupBox>
+
+        <GroupBox Grid.Row="3"
+                  Margin="0,16,0,0"
+                  Header="Ustawienia dodawania">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Tryb parametru"
+                           VerticalAlignment="Center" />
+                <CheckBox x:Name="InstanceCheckBox"
+                          Grid.Row="0"
+                          Grid.Column="1"
+                          Content="Dodaj jako Instance"
+                          VerticalAlignment="Center" />
+
+                <TextBlock Grid.Row="2"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Grupa parametru"
+                           VerticalAlignment="Center" />
+                <ComboBox x:Name="GroupComboBox"
+                          Grid.Row="2"
+                          Grid.Column="1"
+                          Grid.ColumnSpan="2"
+                          DisplayMemberPath="Label"
+                          SelectedValuePath="Key" />
+
+                <TextBlock Grid.Row="4"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="Copy-first"
+                           VerticalAlignment="Center" />
+                <StackPanel Grid.Row="4"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="2">
+                    <CheckBox x:Name="SaveAsCopyCheckBox"
+                              Content="Zapisz jako kopie do wskazanego folderu"
+                              IsChecked="True"
+                              Checked="SaveAsCopyCheckBox_OnChanged"
+                              Unchecked="SaveAsCopyCheckBox_OnChanged" />
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="OutputFolderTextBox"
+                                 IsReadOnly="True"
+                                 VerticalAlignment="Center" />
+                        <Button Grid.Column="2"
+                                Content="Wybierz folder"
+                                Click="BrowseOutputFolderButton_OnClick" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="4"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Dodaj parametry"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>

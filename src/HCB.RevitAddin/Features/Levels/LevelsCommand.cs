@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
@@ -15,18 +16,32 @@ public sealed class LevelsCommand : IExternalCommand
         ref string message,
         ElementSet elements)
     {
-        Document document = commandData.Application.ActiveUIDocument.Document;
-        LevelsOptionsWindow window = new();
-        if (window.ShowDialog() != true)
+        UIDocument? uiDocument = commandData.Application.ActiveUIDocument;
+        if (uiDocument?.Document == null)
         {
-            return Result.Cancelled;
+            TaskDialog.Show("Levels", "To narzedzie wymaga otwartego projektu.");
+            return Result.Succeeded;
         }
 
-        LevelsService service = new();
-        LevelsRenameResult result = service.RenameLevels(document, window.Options);
-        TaskDialog.Show("Levels", BuildSummary(result));
+        try
+        {
+            LevelsOptionsWindow window = new();
+            if (window.ShowDialog() != true)
+            {
+                return Result.Cancelled;
+            }
 
-        return Result.Succeeded;
+            LevelsService service = new();
+            LevelsRenameResult result = service.RenameLevels(uiDocument.Document, window.Options);
+            TaskDialog.Show("Levels", BuildSummary(result));
+            return Result.Succeeded;
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+            TaskDialog.Show("Levels", $"Nie udalo sie zaktualizowac poziomow.\n\n{ex.Message}");
+            return Result.Failed;
+        }
     }
 
     private static string BuildSummary(LevelsRenameResult result)

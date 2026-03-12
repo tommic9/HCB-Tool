@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configurations>Debug R25;Debug R25 Deploy;Debug R26;Debug R26 Deploy;Release R25;Release R26</Configurations>
     <RevitVersion Condition="'$(RevitVersion)' == '' and $(Configuration.Contains('R25'))">2025</RevitVersion>
@@ -8,6 +8,7 @@
     <RevitAddinsDir>$(AppData)\Autodesk\Revit\Addins\$(RevitVersion)</RevitAddinsDir>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultPageItems>false</EnableDefaultPageItems>
@@ -55,11 +56,47 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <Content Include="..\..\kodyfikacja\Systemy HCB.csv">
+      <Link>kodyfikacja\Systemy HCB.csv</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
     <Content Include="Features\**\Resources\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <Compile Include="App.cs" />
+    <Compile Include="GlobalUsings.cs" />
+    <Compile Include="Features\BatchFileScan\BatchFileScanCommand.cs" />
+    <Compile Include="Features\BatchFileScan\BatchFileScanService.cs" />
+    <Compile Include="Features\BatchFileScan\Models\BatchFileScanResult.cs" />
+    <Compile Include="Features\UnloadLinks\UnloadLinksCommand.cs" />
+    <Compile Include="Features\UnloadLinks\UnloadLinksService.cs" />
+    <Compile Include="Features\UnloadLinks\Models\UnloadLinksResult.cs" />
+    <Compile Include="Features\FamilyParameterReport\FamilyParameterReportCommand.cs" />
+    <Compile Include="Features\FamilyParameterReport\FamilyParameterReportService.cs" />
+    <Compile Include="Features\FamilyParameterReport\Models\FamilyParameterReportResult.cs" />
+    <Compile Include="Features\FamilyParameterReport\Models\FamilyParameterReportRow.cs" />
+    <Compile Include="Features\UpgradeAndCopy\UpgradeAndCopyCommand.cs" />
+    <Compile Include="Features\UpgradeAndCopy\UpgradeAndCopyService.cs" />
+    <Compile Include="Features\UpgradeAndCopy\Models\UpgradeAndCopyResult.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\BatchAddSharedFamilyParametersCommand.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\BatchAddSharedFamilyParametersService.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\Models\BatchAddSharedFamilyParametersOptions.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\Models\BatchAddSharedFamilyParametersResult.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\Models\FamilyParameterGroupOption.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\Models\SharedParameterDefinitionItem.cs" />
+    <Compile Include="Features\BatchAddSharedFamilyParameters\UI\BatchAddSharedFamilyParametersWindow.xaml.cs" />
+    <Compile Include="Features\RenameFamilyContent\RenameFamilyContentCommand.cs" />
+    <Compile Include="Features\RenameFamilyContent\RenameFamilyContentService.cs" />
+    <Compile Include="Features\RenameFamilyContent\Models\RenameFamilyContentResult.cs" />
+    <Compile Include="Features\RenameFamilyContent\Models\RenameFamilyContentOptions.cs" />
+    <Compile Include="Features\RenameFamilyContent\UI\RenameFamilyContentWindow.xaml.cs" />
+    <Compile Include="Features\AccessoryTerminalNumbering\AccessoryTerminalNumberingCommand.cs" />
+    <Compile Include="Features\AccessoryTerminalNumbering\AccessoryTerminalNumberingService.cs" />
+    <Compile Include="Features\AccessoryTerminalNumbering\Models\AccessoryTerminalNumberingOptions.cs" />
+    <Compile Include="Features\AccessoryTerminalNumbering\Models\AccessoryTerminalNumberingResult.cs" />
+    <Compile Include="Features\AccessoryTerminalNumbering\UI\AccessoryTerminalNumberingWindow.xaml.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersCommand.cs" />
     <Compile Include="Features\CopyFilters\CopyFiltersService.cs" />
     <Compile Include="Features\CopyFilters\Models\CopyFiltersResult.cs" />
@@ -84,6 +121,10 @@
     <Compile Include="Features\DuctFittingsArea\Models\DuctFittingsAreaOptions.cs" />
     <Compile Include="Features\DuctFittingsArea\Models\DuctFittingsAreaResult.cs" />
     <Compile Include="Features\DuctFittingsArea\UI\DuctFittingsAreaOptionsWindow.xaml.cs" />
+    <Compile Include="Features\DuctFittingNumbering\DuctFittingNumberingCommand.cs" />
+    <Compile Include="Features\DuctFittingNumbering\DuctFittingNumberingService.cs" />
+    <Compile Include="Features\DuctFittingNumbering\Models\DuctFittingNumberingResult.cs" />
+    <Compile Include="Features\DuctFittingNumbering\UI\DuctFittingNumberingWindow.xaml.cs" />
     <Compile Include="Features\Estimate\EstimateCommand.cs" />
     <Compile Include="Features\Estimate\EstimateService.cs" />
     <Compile Include="Features\Estimate\Models\EstimateCatalogRow.cs" />
@@ -106,6 +147,10 @@
     <Compile Include="Features\Levels\Models\LevelsRenameOptions.cs" />
     <Compile Include="Features\Levels\Models\LevelsRenameResult.cs" />
     <Compile Include="Features\Levels\UI\LevelsOptionsWindow.xaml.cs" />
+    <Compile Include="Features\ManualNumbering\ManualNumberingCommand.cs" />
+    <Compile Include="Features\ManualNumbering\ManualNumberingService.cs" />
+    <Compile Include="Features\ManualNumbering\Models\ManualNumberingOptions.cs" />
+    <Compile Include="Features\ManualNumbering\Models\ManualNumberingResult.cs" />
     <Compile Include="Features\MassOfDuctsFittings\MassOfDuctsFittingsCommand.cs" />
     <Compile Include="Features\MassOfDuctsFittings\MassOfDuctsFittingsService.cs" />
     <Compile Include="Features\MassOfDuctsFittings\Models\MassOfDuctsFittingsResult.cs" />
@@ -116,6 +161,7 @@
     <Compile Include="Features\PurgeAnnotations\PurgeAnnotationsCommand.cs" />
     <Compile Include="Features\PurgeAnnotations\PurgeAnnotationsService.cs" />
     <Compile Include="Features\RenameMaterials\Models\RenameMaterialsPreviewItem.cs" />
+
     <Compile Include="Features\RenameMaterials\Models\RenameMaterialsResult.cs" />
     <Compile Include="Features\RenameMaterials\RenameMaterialsCommand.cs" />
     <Compile Include="Features\RenameMaterials\RenameMaterialsService.cs" />
@@ -153,18 +199,37 @@
     <Compile Include="Features\ViewFiltersBulkEdit\UI\ViewFiltersBulkEditWindow.xaml.cs" />
     <Compile Include="Features\ViewFiltersBulkEdit\ViewFiltersBulkEditCommand.cs" />
     <Compile Include="Features\ViewFiltersBulkEdit\ViewFiltersBulkEditService.cs" />
+    <Compile Include="Features\ViewFiltersLegend\Models\ViewFiltersLegendOptions.cs" />
+    <Compile Include="Features\ViewFiltersLegend\Models\ViewFiltersLegendResult.cs" />
+    <Compile Include="Features\ViewFiltersLegend\UI\ViewFiltersLegendWindow.xaml.cs" />
+    <Compile Include="Features\ViewFiltersLegend\ViewFiltersLegendCommand.cs" />
+    <Compile Include="Features\ViewFiltersLegend\ViewFiltersLegendService.cs" />
     <Compile Include="Features\ViewsDuplicate\Models\ViewsDuplicateOptions.cs" />
     <Compile Include="Features\ViewsDuplicate\Models\ViewsDuplicateResult.cs" />
     <Compile Include="Features\ViewsDuplicate\UI\ViewsDuplicateWindow.xaml.cs" />
     <Compile Include="Features\ViewsDuplicate\ViewsDuplicateCommand.cs" />
     <Compile Include="Features\ViewsDuplicate\ViewsDuplicateService.cs" />
     <Compile Include="ImageLoader.cs" />
+    <Compile Include="Infrastructure\AlwaysAvailableCommandAvailability.cs" />
     <Compile Include="Infrastructure\RibbonDefinitions.cs" />
     <Compile Include="Infrastructure\RibbonBuilder.cs" />
     <Compile Include="Infrastructure\RibbonIconResolver.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenFileKind.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenFileScanItem.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenOperationLogEntry.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\Models\WithoutOpenOperationStatus.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenBatchLogService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenDocumentService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenDialogService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileClassifier.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileDiscoveryService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenFileMetadataService.cs" />
+    <Compile Include="Infrastructure\WithoutOpen\WithoutOpenTransmissionDataService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Page Include="Features\CopyFilters\UI\CopyFiltersWindow.xaml" />
     <Page Include="Features\ColorVentSystems\UI\ColorSetSystemsOptionsWindow.xaml" />
+    <Page Include="Features\AccessoryTerminalNumbering\UI\AccessoryTerminalNumberingWindow.xaml" />
+    <Page Include="Features\DuctFittingNumbering\UI\DuctFittingNumberingWindow.xaml" />
     <Page Include="Features\DuctFittingsArea\UI\DuctFittingsAreaOptionsWindow.xaml" />
     <Page Include="Features\Estimate\UI\EstimateOptionsWindow.xaml" />
     <Page Include="Features\FlowChanger\UI\FlowChangerOptionsWindow.xaml" />
@@ -174,12 +239,20 @@
     <Page Include="Features\StylePreview\UI\StylePreviewWindow.xaml" />
     <Page Include="Features\TransferViewTemplates\UI\TransferViewTemplatesWindow.xaml" />
     <Page Include="Features\ViewFiltersBulkEdit\UI\ViewFiltersBulkEditWindow.xaml" />
+    <Page Include="Features\ViewFiltersLegend\UI\ViewFiltersLegendWindow.xaml" />
     <Page Include="Features\ViewsDuplicate\UI\ViewsDuplicateWindow.xaml" />
+    <Page Include="Features\BatchAddSharedFamilyParameters\UI\BatchAddSharedFamilyParametersWindow.xaml" />
+    <Page Include="Features\RenameFamilyContent\UI\RenameFamilyContentWindow.xaml" />
     <Compile Include="UI\Controls\DialogFooterBar.xaml.cs" />
     <Page Include="UI\Controls\DialogFooterBar.xaml" />
     <Compile Include="UI\Controls\ColorSelectionItem.cs" />
     <Compile Include="UI\Controls\ColorSelectionWindow.xaml.cs" />
     <Page Include="UI\Controls\ColorSelectionWindow.xaml" />
+    <Compile Include="UI\Controls\NumberingOptionsWindow.xaml.cs" />
+    <Page Include="UI\Controls\NumberingOptionsWindow.xaml" />
+    <Compile Include="UI\Controls\ReportPreviewColumn.cs" />
+    <Compile Include="UI\Controls\ReportPreviewWindow.xaml.cs" />
+    <Page Include="UI\Controls\ReportPreviewWindow.xaml" />
     <Compile Include="UI\Controls\RenameOptionsWindow.xaml.cs" />
     <Page Include="UI\Controls\RenameOptionsWindow.xaml" />
     <Compile Include="UI\Controls\SelectionListItem.cs" />
@@ -216,4 +289,15 @@
 
   </Target>
 </Project>
+
+
+
+
+
+
+
+
+
+
+
 

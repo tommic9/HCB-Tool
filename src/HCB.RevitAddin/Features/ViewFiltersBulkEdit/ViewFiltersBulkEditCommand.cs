@@ -13,7 +13,8 @@ public sealed class ViewFiltersBulkEditCommand : IExternalCommand
 {
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
-        Document document = commandData.Application.ActiveUIDocument.Document;
+        UIDocument uiDocument = commandData.Application.ActiveUIDocument;
+        Document document = uiDocument.Document;
         ViewFiltersBulkEditService service = new();
 
         var viewsWithFilters = service.GetViewsWithFilters(document);
@@ -26,7 +27,14 @@ public sealed class ViewFiltersBulkEditCommand : IExternalCommand
         SelectionListWindow viewsWindow = new(
             "View Filters Bulk Edit",
             "Wybierz widoki",
-            viewsWithFilters.Select(view => new SelectionListItem(view, view.Name)));
+            viewsWithFilters.Select(ToViewSelectionItem),
+            [],
+            "Wybierz",
+            null,
+            viewsWithFilters.Contains(uiDocument.ActiveView) ? uiDocument.ActiveView : null,
+            "Active View",
+            "ViewType",
+            "Type");
 
         if (viewsWindow.ShowDialog() != true)
         {
@@ -68,5 +76,14 @@ public sealed class ViewFiltersBulkEditCommand : IExternalCommand
             $"Zaktualizowane widoki: {result.UpdatedViewsCount}\nOperacje na filtrach: {result.UpdatedFiltersCount}\n\n{string.Join("\n", result.Messages.Take(12))}");
 
         return Result.Succeeded;
+    }
+
+    private static SelectionListItem ToViewSelectionItem(View view)
+    {
+        return new SelectionListItem(
+            view,
+            view.Name,
+            view.ViewType.ToString(),
+            view.IsTemplate ? "Template" : "View");
     }
 }

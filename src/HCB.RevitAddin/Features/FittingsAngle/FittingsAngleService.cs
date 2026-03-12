@@ -37,6 +37,7 @@ public sealed class FittingsAngleService
         return GetCandidateElements(document, selectedElementIds, selectedCategories)
             .SelectMany(element => element.Parameters.Cast<Parameter>())
             .Where(parameter => parameter.StorageType == StorageType.Double)
+            .Where(IsAngleParameter)
             .Select(parameter => parameter.Definition?.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Where(name => !string.Equals(name, TargetSharedParameterName, StringComparison.OrdinalIgnoreCase))
@@ -142,7 +143,9 @@ public sealed class FittingsAngleService
         foreach (string parameterName in parameterNames)
         {
             Parameter? parameter = element.LookupParameter(parameterName);
-            if (parameter?.HasValue == true && parameter.StorageType == StorageType.Double)
+            if (parameter?.HasValue == true &&
+                parameter.StorageType == StorageType.Double &&
+                IsAngleParameter(parameter))
             {
                 angle = parameter.AsDouble();
                 return true;
@@ -151,6 +154,25 @@ public sealed class FittingsAngleService
 
         angle = 0;
         return false;
+    }
+
+    private static bool IsAngleParameter(Parameter parameter)
+    {
+        try
+        {
+            Definition? definition = parameter.Definition;
+            if (definition == null)
+            {
+                return false;
+            }
+
+            ForgeTypeId dataType = definition.GetDataType();
+            return dataType == SpecTypeId.Angle;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static double RoundAngle(double radiansValue, double degreesStep)

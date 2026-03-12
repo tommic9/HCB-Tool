@@ -1,11 +1,15 @@
 using System;
+using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using Autodesk.Revit.UI;
 
 namespace HCB.RevitAddin
 {
     internal static class RibbonIconResolver
     {
+        private static readonly ConcurrentDictionary<string, string?> ResolvedPathCache = new(StringComparer.OrdinalIgnoreCase);
+
         public static void ApplyTo(ButtonData buttonData, Type commandType, string? resourceDirectoryOverride = null)
         {
             string assemblyDir = Path.GetDirectoryName(commandType.Assembly.Location) ?? string.Empty;
@@ -48,22 +52,26 @@ namespace HCB.RevitAddin
 
         private static string? ResolveIconPath(string primaryDir, string fallbackDir, params string[] fileNames)
         {
-            foreach (string fileName in fileNames)
+            string cacheKey = string.Join("|", new[] { primaryDir, fallbackDir }.Concat(fileNames));
+            return ResolvedPathCache.GetOrAdd(cacheKey, _ =>
             {
-                string primaryPath = Path.Combine(primaryDir, fileName);
-                if (File.Exists(primaryPath))
+                foreach (string fileName in fileNames)
                 {
-                    return primaryPath;
+                    string primaryPath = Path.Combine(primaryDir, fileName);
+                    if (File.Exists(primaryPath))
+                    {
+                        return primaryPath;
+                    }
+
+                    string fallbackPath = Path.Combine(fallbackDir, fileName);
+                    if (File.Exists(fallbackPath))
+                    {
+                        return fallbackPath;
+                    }
                 }
 
-                string fallbackPath = Path.Combine(fallbackDir, fileName);
-                if (File.Exists(fallbackPath))
-                {
-                    return fallbackPath;
-                }
-            }
-
-            return null;
+                return null;
+            });
         }
     }
 }

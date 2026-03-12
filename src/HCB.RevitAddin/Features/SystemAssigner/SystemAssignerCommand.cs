@@ -4,6 +4,7 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using HCB.RevitAddin.UI.Controls;
 
 namespace HCB.RevitAddin.Features.SystemAssigner;
 
@@ -38,10 +39,31 @@ public sealed class SystemAssignerCommand : IExternalCommand
         }
 
         SystemAssignerService service = new();
-        var result = service.Apply(document, equipment);
+        IReadOnlyList<string> parameterNames = service.GetPropagatableParameterNames(equipment);
+        if (parameterNames.Count == 0)
+        {
+            TaskDialog.Show("System Assigner", "Nie znaleziono wspolnych zapisywalnych parametrow tekstowych do propagacji.");
+            return Result.Succeeded;
+        }
+
+        SelectionListWindow parameterWindow = new(
+            "System Assigner",
+            "Wybierz parametr do propagacji",
+            parameterNames.Select(name => new SelectionListItem(name, name)),
+            [],
+            "Propaguj",
+            "Wybrana wartosc z urzadzen zostanie wpisana do elementow polaczonych w systemie.");
+
+        if (parameterWindow.ShowDialog() != true)
+        {
+            return Result.Cancelled;
+        }
+
+        string parameterName = parameterWindow.SelectedValues.Cast<string>().First();
+        var result = service.Apply(document, equipment, parameterName);
         TaskDialog.Show(
             "System Assigner",
-            $"Urzadzenia: {result.ProcessedEquipmentCount}\nSystemy: {result.ProcessedSystemCount}\nZaktualizowane elementy: {result.ChangedCount}\n\n{string.Join("\n", result.Messages.Take(12))}");
+            $"Parametr: {parameterName}\nUrzadzenia: {result.ProcessedEquipmentCount}\nSystemy: {result.ProcessedSystemCount}\nZaktualizowane elementy: {result.ChangedCount}\n\n{string.Join("\n", result.Messages.Take(12))}");
         return Result.Succeeded;
     }
 

@@ -1,0 +1,32 @@
+SystemName;DisplayName;Discipline;GroupName;FilterValue;R;G;B
+V_Supply air (Nawiew);Wentylacja - Nawiew;Ventilation;Wentylacja;V_Supply air;0;128;255
+V_Outdoor air (Czerpny);Wentylacja - Czerpny;Ventilation;Wentylacja;V_Outdoor air;64;192;0
+V_Extract air (Wywiew);Wentylacja - Wywiew;Ventilation;Wentylacja;V_Extract air;255;255;0
+V_Exhaust air (Wyrzut);Wentylacja - Wyrzut;Ventilation;Wentylacja;V_Exhaust air;192;128;0
+CHW_Supply;Chlodzenie - Zasilanie;Piping;Chlodzenie;CHW_Supply;0;92;255
+CHW_Return;Chlodzenie - Powrot;Piping;Chlodzenie;CHW_Return;0;255;255
+HP_Supply;Grzanie/Chlodzenie - Zasilanie;Piping;Grzanie;HP_Supply;128;64;128
+HP_Return;Grzanie/Chlodzenie - Powrot;Piping;Grzanie;HP_Return;255;64;128
+HW_Supply;Grzanie - Zasilanie;Piping;Grzanie;HW_Supply;255;0;0
+HW_Return;Grzanie - Powrot;Piping;Grzanie;HW_Return;0;0;128
+HWX_Supply;Wymiennik - Zasilanie;Piping;Grzanie;HWX_Supply;192;0;0
+HWX_Return;Wymiennik - Powrot;Piping;Grzanie;HWX_Return;0;64;192
+WU_Circulation;Woda uzytkowa - Cyrkulacja;Piping;Woda uzytkowa;WU_Circulation;128;0;255
+WU_Cold Water;Woda uzytkowa - Zimna woda;Piping;Woda uzytkowa;WU_Cold Water;0;255;0
+WU_Hot Water;Woda uzytkowa - Ciepla woda;Piping;Woda uzytkowa;WU_Hot Water;255;64;0
+FP_Fire Protection;Instalacja PPOZ;Piping;PPOZ;FP_Fire Protection;255;164;8
+PH_Supply;Podlogowka - Zasilanie;Piping;Grzanie;PH_Supply;240;0;150
+PH_Return;Podlogowka - Powrot;Piping;Grzanie;PH_Return;180;0;192
+SW_Sewage Water;Kanalizacja;Piping;Kanalizacja;SW_Sewage Water;128;92;64
+SWC_Sewage Water Condensat;Kanalizacja - Skropliny;Piping;Kanalizacja;SWC_Sewage Water Condensat;128;128;92
+SWV_Sewage Water Ventilation;Kanalizacja - Odpowietrzenie;Piping;Kanalizacja;SWV_Sewage Water Ventilation;164;128;64
+RWP_Rainwater Pressure;Kanalizacja deszczowa - Cisnieniowa;Piping;Deszczowka;RWP_Rainwater Pressure;0;128;164
+RWG_Rainwater Gravity;Kanalizacja deszczowa - Grawitacyjna;Piping;Deszczowka;RWG_Rainwater Gravity;128;164;255
+RWE_Rainwater Emergency;Kanalizacja deszczowa - Awaryjna;Piping;Deszczowka;RWE_Rainwater Emergency;192;128;192
+VRV_Supply;VRV - Zasilanie;Piping;Freon / DX;VRV_Supply;0;192;192
+VRV_Return;VRV - Powrot;Piping;Freon / DX;VRV_Return;0;92;192
+REF_Supply;Chlodnictwo - Zasilanie;Piping;Chlodnictwo;REF_Supply;24;128;200
+REF_Return;Chlodnictwo - Powrot;Piping;Chlodnictwo;REF_Return;24;192;222
+SPL_Supply;Split - Zasilanie;Piping;Freon / DX;SPL_Supply;255;164;164
+SPL_Return;Split - Powrot;Piping;Freon / DX;SPL_Return;255;128;164
+PA_Pressure Air;Sprezone powietrze;Piping;Sprezone powietrze;PA_Pressure Air;255;102;204

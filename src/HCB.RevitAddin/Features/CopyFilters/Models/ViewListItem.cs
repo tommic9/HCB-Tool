@@ -13,6 +13,10 @@ namespace HCB.RevitAddin.Features.CopyFilters.Models
 
         public ElementId Id => View.Id;
 
+        public string ViewTypeName => View.ViewType.ToString();
+
+        public string ItemTypeName => View.IsTemplate ? "Template" : "View";
+
         public string DisplayName => View.IsTemplate
             ? $"{View.Name} [Template]"
             : View.Name;

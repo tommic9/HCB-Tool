@@ -14,7 +14,7 @@ public sealed class EstimateService
     private const string PriceParameterName = "HC_Cena_Jednostkowa";
     private const string CostParameterName = "HC_Koszt";
     private const string AngleParameterName = "HC_Kat";
-    private const string LegacyAngleParameterName = "HC_K\u0105t";
+    private const string LegacyAngleParameterName = "HC_K�t";
     private const string AreaParameterName = "HC_Area";
 
     private static readonly BuiltInCategory[] SupportedCategories =
@@ -45,6 +45,7 @@ public sealed class EstimateService
 
         foreach (Element element in elements)
         {
+            result.ProcessedCount++;
             try
             {
                 ProcessElement(element, catalogRows, options.AddFoil, foilPrice, result);
@@ -98,7 +99,10 @@ public sealed class EstimateService
         int? angleValue = GetAngleValue(element);
         double? unitPrice = null;
         double? cost = null;
-        bool isRectangular = sizeString.IndexOf('x', StringComparison.OrdinalIgnoreCase) >= 0 || sizeString.Contains('×');
+        double quantity = 0;
+        string quantityUnit = string.Empty;
+        string pricingBasis = string.Empty;
+        bool isRectangular = sizeString.IndexOf('x', StringComparison.OrdinalIgnoreCase) >= 0 || sizeString.Contains("×");
 
         if (isRectangular)
         {
@@ -136,6 +140,11 @@ public sealed class EstimateService
                 {
                     cost += areaSquareMeters.Value * foilPrice;
                 }
+
+                quantity = areaSquareMeters.Value;
+                quantityUnit = "m2";
+                pricingBasis = "HC_Area";
+                result.TotalAreaSquareMeters += areaSquareMeters.Value;
             }
             else if (categoryName == "Duct Accessory")
             {
@@ -151,6 +160,9 @@ public sealed class EstimateService
 
                 unitPrice = row.UnitPrice;
                 cost = row.UnitPrice;
+                quantity = 1;
+                quantityUnit = "szt";
+                pricingBasis = "Typ + rozmiar";
             }
         }
         else
@@ -176,8 +188,13 @@ public sealed class EstimateService
                         return;
                     }
 
+                    double lengthMeters = GetLengthMeters(element);
                     unitPrice = row.UnitPrice;
-                    cost = row.UnitPrice * GetLengthMeters(element);
+                    cost = row.UnitPrice * lengthMeters;
+                    quantity = lengthMeters;
+                    quantityUnit = "m";
+                    pricingBasis = "Dlugosc";
+                    result.TotalLengthMeters += lengthMeters;
                     break;
                 }
 
@@ -197,6 +214,9 @@ public sealed class EstimateService
 
                     unitPrice = row.UnitPrice;
                     cost = row.UnitPrice;
+                    quantity = 1;
+                    quantityUnit = "szt";
+                    pricingBasis = "Typ + rozmiar";
                     break;
                 }
 
@@ -211,6 +231,9 @@ public sealed class EstimateService
 
                     unitPrice = row.UnitPrice;
                     cost = row.UnitPrice;
+                    quantity = 1;
+                    quantityUnit = "szt";
+                    pricingBasis = "Typ + rozmiar";
                     break;
                 }
             }
@@ -224,6 +247,18 @@ public sealed class EstimateService
         priceParameter.Set(unitPrice.Value);
         costParameter.Set(cost.Value);
         result.UpdatedCount++;
+        result.TotalCost += cost.Value;
+        result.AppliedRows.Add(new EstimateAppliedRow(
+            element.Id.Value,
+            categoryName,
+            typeName,
+            sizeString,
+            angleValue,
+            pricingBasis,
+            quantity,
+            quantityUnit,
+            unitPrice.Value,
+            cost.Value));
     }
 
     private static List<Element> CollectElements(Document document)
@@ -635,7 +670,7 @@ public sealed class EstimateService
         if (string.Equals(shape, "round", StringComparison.OrdinalIgnoreCase)
             && (normalizedPattern.Contains('-') || normalizedPattern.Contains('/'))
             && !normalizedPattern.Contains('x', StringComparison.OrdinalIgnoreCase)
-            && !normalizedPattern.Contains('×'))
+            && !normalizedPattern.Contains("×", StringComparison.OrdinalIgnoreCase))
         {
             char separator = normalizedPattern.Contains('-') ? '-' : '/';
             string[] parts = normalizedPattern.Split(separator);
@@ -719,3 +754,4 @@ public sealed class EstimateService
             : null;
     }
 }
+

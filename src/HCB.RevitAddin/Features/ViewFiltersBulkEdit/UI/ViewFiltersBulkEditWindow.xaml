@@ -45,8 +45,8 @@
                           Grid.Column="1"
                           SelectedIndex="0">
                     <ComboBoxItem Content="Bez zmian" Tag="NoChange" />
-                    <ComboBoxItem Content="Wlacz" Tag="Enable" />
-                    <ComboBoxItem Content="Wylacz" Tag="Disable" />
+                    <ComboBoxItem Content="ON" Tag="Enable" />
+                    <ComboBoxItem Content="OFF" Tag="Disable" />
                 </ComboBox>
                 <TextBlock Grid.Row="2"
                            Style="{StaticResource SectionLabelStyle}"

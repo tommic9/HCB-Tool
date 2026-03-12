@@ -8,6 +8,16 @@ namespace HCB.RevitAddin
     {
         public static void Create(UIControlledApplication application)
         {
+            EnsureTab(application);
+
+            foreach (RibbonPanelDefinition panelDefinition in RibbonDefinitions.Create())
+            {
+                CreatePanel(application, panelDefinition);
+            }
+        }
+
+        public static void EnsureTab(UIControlledApplication application)
+        {
             try
             {
                 application.CreateRibbonTab(RibbonDefinitions.TabName);
@@ -16,12 +26,12 @@ namespace HCB.RevitAddin
             {
                 // The tab already exists in this Revit session.
             }
+        }
 
-            foreach (RibbonPanelDefinition panelDefinition in RibbonDefinitions.Create())
-            {
-                RibbonPanel panel = GetOrCreatePanel(application, panelDefinition.Name);
-                AddItems(panel, panelDefinition.Items);
-            }
+        public static void CreatePanel(UIControlledApplication application, RibbonPanelDefinition panelDefinition)
+        {
+            RibbonPanel panel = GetOrCreatePanel(application, panelDefinition.Name);
+            AddItems(panel, panelDefinition.Items);
         }
 
         private static void AddItems(RibbonPanel panel, IReadOnlyList<RibbonItemDefinition> items)
@@ -113,6 +123,11 @@ namespace HCB.RevitAddin
                 ToolTip = definition.ToolTip,
                 LongDescription = definition.LongDescription
             };
+
+            if (definition.AvailabilityType != null)
+            {
+                buttonData.AvailabilityClassName = definition.AvailabilityType.FullName;
+            }
 
             RibbonIconResolver.ApplyTo(buttonData, definition.CommandType);
             return buttonData;

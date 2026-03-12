@@ -16,11 +16,13 @@ public sealed class ColorUniqueSystemsCommand : IExternalCommand
         Document document = commandData.Application.ActiveUIDocument.Document;
         ColorUniqueSystemsService service = new();
 
-        var allSystems = service.GetVentilationSystems()
-            .Select(item => new ColorSelectionItem(item, item.DisplayName, item.Red, item.Green, item.Blue, "Wentylacja"))
-            .Concat(service.GetPipingSystems()
-                .Select(item => new ColorSelectionItem(item, item.DisplayName, item.Red, item.Green, item.Blue, "Rurowe")))
+        var allSystems = service.GetAvailableSystems()
+            .Select(item => new ColorSelectionItem(item, item.DisplayLabel, item.Red, item.Green, item.Blue, item.FilterGroup))
             .ToList();
+
+        string sourceLabel = service.UsesFallbackPreset()
+            ? "Zrodlo kolorow: preset w kodzie (fallback)."
+            : $"Zrodlo kolorow: CSV ({service.GetConfigurationSourceLabel()}).";
 
         ColorSelectionWindow window = new(
             "Color Unique Systems",
@@ -29,7 +31,7 @@ public sealed class ColorUniqueSystemsCommand : IExternalCommand
             [],
             false,
             "Koloruj systemy",
-            "Wybierz systemy wentylacyjne i rurowe do pokolorowania. Mozesz filtrowac po grupie.");
+            sourceLabel + " Wybierz systemy do pokolorowania i filtruj je po grupach zdefiniowanych w konfiguracji.");
 
         if (window.ShowDialog() != true)
         {
@@ -38,9 +40,11 @@ public sealed class ColorUniqueSystemsCommand : IExternalCommand
 
         List<SystemColorOption> selected = window.SelectedValues.Cast<SystemColorOption>().ToList();
         ColorUniqueSystemsResult result = service.Apply(document, document.ActiveView, selected, window.OverrideDisplayLines);
+        string fallbackText = result.UsedFallbackPreset ? "Tak" : "Nie";
+
         TaskDialog.Show(
             "Color Unique Systems",
-            $"Zastosowane systemy: {result.AppliedCount}\n\n{string.Join("\n", result.Messages.Take(16))}");
+            $"Zastosowane systemy: {result.AppliedCount}\nFallback preset: {fallbackText}\nZrodlo: {result.ConfigurationSource}\n\n{string.Join("\n", result.Messages.Take(16))}");
         return Result.Succeeded;
     }
 }
