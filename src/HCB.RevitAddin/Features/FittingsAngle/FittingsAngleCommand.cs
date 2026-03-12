@@ -75,7 +75,7 @@ public sealed class FittingsAngleCommand : IExternalCommand
             availableTargetParameters.Select(name => new SelectionListItem(name, name)),
             defaultTargetSelection,
             "Uruchom",
-            "Wybierz parametr docelowy typu Angle. Narzedzie wpisze do niego zaokraglony kat pobrany z elementu. Jesli zaznaczysz kilka pozycji, narzedzie uzyje pierwszej.");
+            "Wybierz parametr docelowy typu Angle. Lista pokazuje tylko parametry projektu lub wspoldzielone przypiete do wybranych kategorii. Narzedzie wpisze do niego zaokraglony kat pobrany z elementu. Jesli zaznaczysz kilka pozycji, narzedzie uzyje pierwszej.");
 
         if (targetParameterWindow.ShowDialog() != true)
         {

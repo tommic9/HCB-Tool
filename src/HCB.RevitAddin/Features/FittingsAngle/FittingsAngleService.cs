@@ -11,6 +11,7 @@ public sealed class FittingsAngleService
     public const string DefaultTargetParameterName = "HC_K\u0105t";
     public const string NoExtraParameterOption = "__NONE__";
     private static readonly string[] PredefinedAngleParameters = ["Angle", "angle", "w", "arc", "RSen_P_c01_angle"];
+    private static readonly string[] PreferredTargetParameterNames = ["HC_K\u0105t", "HC_Kat"];
 
     private static readonly IReadOnlyDictionary<string, BuiltInCategory> CategoryOptions = new Dictionary<string, BuiltInCategory>
     {
@@ -40,7 +41,9 @@ public sealed class FittingsAngleService
             .Where(IsAngleParameter)
             .Select(parameter => parameter.Definition?.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Where(name => !PredefinedAngleParameters.Contains(name!, StringComparer.OrdinalIgnoreCase))
             .Where(name => !string.Equals(name, DefaultTargetParameterName, StringComparison.OrdinalIgnoreCase))
+            .Where(name => !string.Equals(name, "HC_Kat", StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
             .Cast<string>()
@@ -59,16 +62,15 @@ public sealed class FittingsAngleService
             return [];
         }
 
-        return GetCandidateElements(document, selectedElementIds, selectedCategories)
-            .SelectMany(element => element.Parameters.Cast<Parameter>())
-            .Where(parameter => parameter.Definition != null)
-            .Where(parameter => !parameter.IsReadOnly)
-            .Where(parameter => parameter.StorageType == StorageType.Double)
-            .Where(IsAngleParameter)
-            .Select(parameter => parameter.Definition!.Name)
-            .Where(name => !string.IsNullOrWhiteSpace(name))
+        List<Element> candidates = GetCandidateElements(document, selectedElementIds, selectedCategories).ToList();
+        HashSet<BuiltInCategory> selectedCategorySet = selectedCategories.ToHashSet();
+
+        return GetProjectOrSharedAngleDefinitions(document, selectedCategorySet)
+            .Select(definition => definition.Name)
+            .Where(name => candidates.Any(element => HasWritableAngleParameter(element, name)))
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
+            .OrderBy(name => GetPreferredTargetOrder(name))
+            .ThenBy(name => name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
     }
 
@@ -203,6 +205,75 @@ public sealed class FittingsAngleService
         {
             return false;
         }
+    }
+
+    private static IEnumerable<Definition> GetProjectOrSharedAngleDefinitions(Document document, ISet<BuiltInCategory> selectedCategories)
+    {
+        BindingMap map = document.ParameterBindings;
+        DefinitionBindingMapIterator iterator = map.ForwardIterator();
+        iterator.Reset();
+
+        while (iterator.MoveNext())
+        {
+            if (iterator.Key is not Definition definition)
+            {
+                continue;
+            }
+
+            if (!IsAngleDefinition(definition))
+            {
+                continue;
+            }
+
+            if (iterator.Current is not ElementBinding binding)
+            {
+                continue;
+            }
+
+            bool appliesToSelectedCategory = binding.Categories
+                .Cast<Category>()
+                .Select(category => category.BuiltInCategory)
+                .Any(selectedCategories.Contains);
+
+            if (appliesToSelectedCategory)
+            {
+                yield return definition;
+            }
+        }
+    }
+
+    private static bool IsAngleDefinition(Definition definition)
+    {
+        try
+        {
+            return definition.GetDataType() == SpecTypeId.Angle;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool HasWritableAngleParameter(Element element, string parameterName)
+    {
+        Parameter? parameter = element.LookupParameter(parameterName);
+        return parameter != null
+               && !parameter.IsReadOnly
+               && parameter.StorageType == StorageType.Double
+               && IsAngleParameter(parameter);
+    }
+
+    private static int GetPreferredTargetOrder(string parameterName)
+    {
+        for (int index = 0; index < PreferredTargetParameterNames.Length; index++)
+        {
+            if (string.Equals(parameterName, PreferredTargetParameterNames[index], StringComparison.OrdinalIgnoreCase))
+            {
+                return index;
+            }
+        }
+
+        return PreferredTargetParameterNames.Length;
     }
 
     private static double RoundAngle(double radiansValue, double degreesStep)
