@@ -137,8 +137,20 @@ public partial class SelectionListWindow : Window
             return;
         }
 
+        ResetFilters();
         _currentSelection.Clear();
         _currentSelection.Add(_activeSelectionValue);
+        ApplyFilters();
+        ScrollSelectionIntoView();
+    }
+
+    private void ActiveViewCheckBox_OnUnchecked(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
         ApplyFilters();
     }
 
@@ -253,5 +265,29 @@ public partial class SelectionListWindow : Window
 
         ItemsListBox.ItemsSource = filteredItems;
         ApplySelectionToVisibleItems(filteredItems);
+    }
+
+    private void ResetFilters()
+    {
+        SearchTextBox.Text = string.Empty;
+
+        if (PrimaryFilterPanel.Visibility == Visibility.Visible)
+        {
+            FilterGroupComboBox.SelectedValue = AllFilterValue;
+        }
+
+        if (SecondaryFilterPanel.Visibility == Visibility.Visible)
+        {
+            SecondaryFilterGroupComboBox.SelectedValue = AllFilterValue;
+        }
+    }
+
+    private void ScrollSelectionIntoView()
+    {
+        SelectionListItem? selectedItem = ItemsListBox.SelectedItems.Cast<SelectionListItem>().FirstOrDefault();
+        if (selectedItem != null)
+        {
+            ItemsListBox.ScrollIntoView(selectedItem);
+        }
     }
 }
