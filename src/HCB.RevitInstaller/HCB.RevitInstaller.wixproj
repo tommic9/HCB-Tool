@@ -9,7 +9,7 @@
     <RevitYear Condition="'$(RevitYear)' == '' and $(Configuration.Contains('R25'))">2025</RevitYear>
     <RevitYear Condition="'$(RevitYear)' == '' and $(Configuration.Contains('R26'))">2026</RevitYear>
     <RevitYear Condition="'$(RevitYear)' == ''">2025</RevitYear>
-    <InstallerProductVersion Condition="'$(InstallerProductVersion)' == ''">1.0.0</InstallerProductVersion>
+    <InstallerProductVersion Condition="'$(InstallerProductVersion)' == ''">1.0.1</InstallerProductVersion>
     <UpgradeCode Condition="'$(RevitYear)' == '2025'">C20F0BE8-908B-42D1-B5B4-7F83A5D96B37</UpgradeCode>
     <UpgradeCode Condition="'$(RevitYear)' == '2026'">8557F317-CFB5-4CB1-90A5-C3BA7E60842D</UpgradeCode>
     <ManifestComponentGuid Condition="'$(RevitYear)' == '2025'">B424AF23-2B8E-4E1A-AFF0-7BF1F957FC87</ManifestComponentGuid>

@@ -229,7 +229,13 @@ namespace HCB.RevitAddin
                             "Filters Legend",
                             typeof(Features.ViewFiltersLegend.ViewFiltersLegendCommand),
                             "Tworzy legendy dla filtrow przypisanych do wybranych widokow i szablonow.",
-                            "Generuje nowy widok legendy z probkami Surface, Cut i nazwa filtra na podstawie override filtrow.")
+                            "Generuje nowy widok legendy z probkami Surface, Cut i nazwa filtra na podstawie override filtrow."),
+                        new RibbonPushButtonDefinition(
+                            "HcbCadLinkGraphicsCopyButton",
+                            "CAD Link VG",
+                            typeof(Features.CadLinkGraphicsCopy.CadLinkGraphicsCopyCommand),
+                            "Kopiuje ustawienia widocznosci i nadpisan warstw z jednego linku CAD do drugiego w aktywnym widoku.",
+                            "Dopasowuje warstwy po nazwach subkategorii CAD i przenosi visibility oraz category overrides dla linku docelowego.")
                     ]),
                 new RibbonPanelDefinition(
                     "WithoutOpen",
@@ -360,6 +366,8 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
+
 
 
 

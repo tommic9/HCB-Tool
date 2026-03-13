@@ -87,6 +87,9 @@
     <Compile Include="Features\BatchAddSharedFamilyParameters\Models\FamilyParameterGroupOption.cs" />
     <Compile Include="Features\BatchAddSharedFamilyParameters\Models\SharedParameterDefinitionItem.cs" />
     <Compile Include="Features\BatchAddSharedFamilyParameters\UI\BatchAddSharedFamilyParametersWindow.xaml.cs" />
+    <Compile Include="Features\CadLinkGraphicsCopy\CadLinkGraphicsCopyCommand.cs" />
+    <Compile Include="Features\CadLinkGraphicsCopy\CadLinkGraphicsCopyService.cs" />
+    <Compile Include="Features\CadLinkGraphicsCopy\Models\CadLinkGraphicsCopyResult.cs" />
     <Compile Include="Features\RenameFamilyContent\RenameFamilyContentCommand.cs" />
     <Compile Include="Features\RenameFamilyContent\RenameFamilyContentService.cs" />
     <Compile Include="Features\RenameFamilyContent\Models\RenameFamilyContentResult.cs" />
@@ -289,6 +292,7 @@
 
   </Target>
 </Project>
+
 
 
 
