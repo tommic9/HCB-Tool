@@ -129,7 +129,7 @@ namespace HCB.RevitAddin
                 buttonData.AvailabilityClassName = definition.AvailabilityType.FullName;
             }
 
-            RibbonIconResolver.ApplyTo(buttonData, definition.CommandType);
+            RibbonIconResolver.ApplyTo(buttonData, definition.CommandType, definition.IconResourceDirectory);
             return buttonData;
         }
 
@@ -159,3 +159,5 @@ namespace HCB.RevitAddin
         }
     }
 }
+
+

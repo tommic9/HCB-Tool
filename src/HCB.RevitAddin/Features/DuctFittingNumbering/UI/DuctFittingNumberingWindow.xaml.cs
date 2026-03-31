@@ -5,19 +5,52 @@ namespace HCB.RevitAddin.Features.DuctFittingNumbering.UI;
 
 public partial class DuctFittingNumberingWindow : Window
 {
-    public DuctFittingNumberingWindow(IReadOnlyList<string> availableTargetParameters, IReadOnlyList<string> availableLengthParameters)
+    private const string DefaultTargetParameterName = "LIN_POSITION_NUMBER_A";
+    private readonly bool _requiresLengthParameter;
+
+    public DuctFittingNumberingWindow(
+        IReadOnlyList<string> availableTargetParameters,
+        IReadOnlyList<string> availableLengthParameters,
+        string windowTitle,
+        string heading,
+        bool requiresLengthParameter)
     {
         InitializeComponent();
+
+        _requiresLengthParameter = requiresLengthParameter;
+        Title = windowTitle;
+        WindowTitleTextBlock.Text = heading;
+        OptionsGroupBox.Header = requiresLengthParameter ? "Opcje numeracji" : "Parametr docelowy";
+
         TargetParameterComboBox.ItemsSource = availableTargetParameters;
-        TargetParameterComboBox.SelectedIndex = availableTargetParameters.Count > 0 ? 0 : -1;
+        TargetParameterComboBox.SelectedItem = availableTargetParameters.Contains(DefaultTargetParameterName)
+            ? DefaultTargetParameterName
+            : availableTargetParameters.Count > 0 ? availableTargetParameters[0] : null;
+
         LengthParameterComboBox.ItemsSource = availableLengthParameters;
         LengthParameterComboBox.SelectedIndex = availableLengthParameters.Count > 0 ? 0 : -1;
-        FooterBar.StatusText = "Wybierz parametr docelowy i parametr dlugosci do grupowania kanalow.";
+        IncludeSystemParameterCheckBox.IsChecked = false;
+
+        if (!requiresLengthParameter)
+        {
+            LengthParameterLabel.Visibility = Visibility.Collapsed;
+            LengthParameterComboBox.Visibility = Visibility.Collapsed;
+            LengthParameterSpacerRow.Height = new GridLength(0);
+            LengthParameterRow.Height = new GridLength(0);
+            FooterBar.StatusText = "Wybierz parametr docelowy. Numeracja grupuje ksztaltki i akcesoria po parametrach LIN.";
+            return;
+        }
+
+        FooterBar.StatusText = "Wybierz parametr docelowy, parametr dlugosci dla kanalow i opcjonalnie dolacz HC_System.";
     }
 
     public string SelectedTargetParameter => TargetParameterComboBox.SelectedItem as string ?? string.Empty;
 
-    public string SelectedLengthParameter => LengthParameterComboBox.SelectedItem as string ?? string.Empty;
+    public string SelectedLengthParameter => _requiresLengthParameter
+        ? LengthParameterComboBox.SelectedItem as string ?? string.Empty
+        : string.Empty;
+
+    public bool IncludeSystemParameter => IncludeSystemParameterCheckBox.IsChecked == true;
 
     private void ConfirmButton_OnClick(object sender, RoutedEventArgs e)
     {
@@ -27,7 +60,7 @@ public partial class DuctFittingNumberingWindow : Window
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(SelectedLengthParameter))
+        if (_requiresLengthParameter && string.IsNullOrWhiteSpace(SelectedLengthParameter))
         {
             FooterBar.StatusText = "Wybierz parametr dlugosci.";
             return;

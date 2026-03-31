@@ -10,6 +10,8 @@ public sealed class DuctFittingNumberingResult
 
     public int FittingCount { get; set; }
 
+    public int AccessoryCount { get; set; }
+
     public int TotalCount { get; set; }
 
     public int SharedNumberCount { get; set; }
@@ -17,6 +19,8 @@ public sealed class DuctFittingNumberingResult
     public string LengthParameterName { get; set; } = string.Empty;
 
     public string TargetParameterName { get; set; } = string.Empty;
+
+    public bool IncludeSystemParameter { get; set; }
 
     public List<string> Messages { get; } = [];
 }

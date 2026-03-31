@@ -3,12 +3,11 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using HCB.RevitAddin.Features.DuctFittingNumbering.Models;
 using HCB.RevitAddin.Features.DuctFittingNumbering.UI;
-using System.Linq;
 
 namespace HCB.RevitAddin.Features.DuctFittingNumbering;
 
 [Transaction(TransactionMode.Manual)]
-public sealed class DuctFittingNumberingCommand : IExternalCommand
+public sealed class DuctNumberingCommand : IExternalCommand
 {
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
@@ -18,10 +17,10 @@ public sealed class DuctFittingNumberingCommand : IExternalCommand
         string scopeLabel = hasSelection ? "Zaznaczenie" : "Caly model";
         DuctFittingNumberingService service = new();
 
-        var targets = service.CollectTargets(document, uiDocument.Selection.GetElementIds(), DuctFittingNumberingService.NumberingScope.DuctsAndFittings);
+        var targets = service.CollectTargets(document, uiDocument.Selection.GetElementIds(), DuctFittingNumberingService.NumberingScope.Ducts);
         if (targets.Count == 0)
         {
-            TaskDialog.Show("Duct and Fitting Numbering", "Brak kanalow, ksztaltek lub akcesoriow do numeracji.");
+            TaskDialog.Show("Duct Numbering", "Brak kanalow do numeracji.");
             return Result.Succeeded;
         }
 
@@ -29,15 +28,15 @@ public sealed class DuctFittingNumberingCommand : IExternalCommand
         var availableLengthParameters = service.GetAvailableLengthParameters(document);
         if (availableTargetParameters.Count == 0)
         {
-            TaskDialog.Show("Duct and Fitting Numbering", "Brak zapisywalnych parametrow tekstowych dla wybranych elementow.");
+            TaskDialog.Show("Duct Numbering", "Brak zapisywalnych parametrow tekstowych dla wybranych kanalow.");
             return Result.Succeeded;
         }
 
         DuctFittingNumberingWindow window = new(
             availableTargetParameters,
             availableLengthParameters,
-            "Duct and Fitting Numbering",
-            "Duct and Fitting Numbering",
+            "Duct Numbering",
+            "Duct Numbering",
             true);
 
         if (window.ShowDialog() != true)
@@ -51,15 +50,15 @@ public sealed class DuctFittingNumberingCommand : IExternalCommand
             window.SelectedTargetParameter,
             window.SelectedLengthParameter,
             window.IncludeSystemParameter,
-            DuctFittingNumberingService.NumberingScope.DuctsAndFittings);
+            DuctFittingNumberingService.NumberingScope.Ducts);
 
         string messages = result.Messages.Count > 0
             ? "\nUwagi:\n- " + string.Join("\n- ", result.Messages)
             : string.Empty;
 
         TaskDialog.Show(
-            "Duct and Fitting Numbering",
-            $"Tryb: {scopeLabel}\nPonumerowano: {result.TotalCount}\nKanaly: {result.DuctCount}\nKsztaltki: {result.FittingCount}\nAkcesoria: {result.AccessoryCount}\nWspoldzielony numer: {result.SharedNumberCount}\nSystemy: {result.SystemsCount}\nParametr docelowy: {result.TargetParameterName}\nParametr dlugosci: {result.LengthParameterName}\nDodaj HC_System: {(result.IncludeSystemParameter ? "Tak" : "Nie")}{messages}");
+            "Duct Numbering",
+            $"Tryb: {scopeLabel}\nPonumerowano kanalow: {result.DuctCount}\nWspoldzielony numer: {result.SharedNumberCount}\nSystemy: {result.SystemsCount}\nParametr docelowy: {result.TargetParameterName}\nParametr dlugosci: {result.LengthParameterName}\nDodaj HC_System: {(result.IncludeSystemParameter ? "Tak" : "Nie")}{messages}");
 
         return Result.Succeeded;
     }

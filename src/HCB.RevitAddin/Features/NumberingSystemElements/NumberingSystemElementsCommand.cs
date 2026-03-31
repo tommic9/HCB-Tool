@@ -1,3 +1,4 @@
+using System.Linq;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
@@ -12,26 +13,47 @@ public sealed class NumberingSystemElementsCommand : IExternalCommand
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
         UIDocument uiDocument = commandData.Application.ActiveUIDocument;
-        Reference reference;
-        try
+        var selectedIds = uiDocument.Selection.GetElementIds();
+        Element? startElement = selectedIds
+            .Select(uiDocument.Document.GetElement)
+            .FirstOrDefault(element => element?.Category?.Id.Value == (int)BuiltInCategory.OST_MechanicalEquipment);
+
+        string scopeLabel;
+        if (startElement != null)
         {
-            reference = uiDocument.Selection.PickObject(
-                ObjectType.Element,
-                new MechanicalEquipmentSelectionFilter(),
-                "Wskaz Mechanical Equipment jako poczatek numeracji");
+            scopeLabel = "Zaznaczenie";
         }
-        catch
+        else
         {
-            return Result.Cancelled;
+            Reference reference;
+            try
+            {
+                reference = uiDocument.Selection.PickObject(
+                    ObjectType.Element,
+                    new MechanicalEquipmentSelectionFilter(),
+                    "Wskaz Mechanical Equipment jako poczatek numeracji");
+            }
+            catch
+            {
+                return Result.Cancelled;
+            }
+
+            startElement = uiDocument.Document.GetElement(reference);
+            scopeLabel = "Klikniety element startowy";
         }
 
-        Element startElement = uiDocument.Document.GetElement(reference);
+        if (startElement == null)
+        {
+            TaskDialog.Show("Numbering System Elements", "Nie znaleziono elementu startowego.");
+            return Result.Succeeded;
+        }
+
         NumberingSystemElementsService service = new();
         NumberingSystemElementsResult result = service.Apply(uiDocument.Document, startElement.Id);
 
         TaskDialog.Show(
             "Numbering System Elements",
-            $"Zaktualizowane: {result.UpdatedCount}\nGrupy: {result.GroupCount}\n\n{string.Join("\n", result.Messages)}");
+            $"Tryb: {scopeLabel}\nZaktualizowane: {result.UpdatedCount}\nGrupy: {result.GroupCount}\n\n{string.Join("\n", result.Messages)}");
 
         return Result.Succeeded;
     }

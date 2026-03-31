@@ -9,8 +9,17 @@ namespace HCB.RevitAddin.Features.DuctFittingNumbering;
 
 public sealed class DuctFittingNumberingService
 {
-    private static readonly string[] FittingDimensionParameterNames =
+    public enum NumberingScope
+    {
+        Ducts,
+        Fittings,
+        DuctsAndFittings
+    }
+
+    private static readonly string[] FittingGroupingParameterNames =
     [
+        "LIN_VE_DIM_TYP",
+        "LIN_VE_DIM_L",
         "LIN_VE_DIM_A",
         "LIN_VE_DIM_B",
         "LIN_VE_DIM_C",
@@ -18,12 +27,15 @@ public sealed class DuctFittingNumberingService
         "LIN_VE_DIM_E",
         "LIN_VE_DIM_F",
         "LIN_VE_DIM_H",
-        "LIN_VE_DIM_L",
         "LIN_VE_DIM_M",
+        "LIN_VE_DIM_M2",
         "LIN_VE_DIM_N",
         "LIN_VE_DIM_R",
         "LIN_VE_DIM_R1",
-        "LIN_VE_DIM_R2"
+        "LIN_VE_DIM_R2",
+        "LIN_VE_DIM_R3",
+        "LIN_VE_DIM_R4",
+        "LIN_VE_ANG_W"
     ];
 
     public IReadOnlyList<string> GetAvailableLengthParameters(Document document)
@@ -48,22 +60,21 @@ public sealed class DuctFittingNumberingService
         return parameters;
     }
 
-    public IReadOnlyList<Element> CollectTargets(Document document, ICollection<ElementId> selectedIds)
+    public IReadOnlyList<Element> CollectTargets(Document document, ICollection<ElementId> selectedIds, NumberingScope scope = NumberingScope.DuctsAndFittings)
     {
         if (selectedIds.Count > 0)
         {
             return selectedIds
                 .Select(document.GetElement)
-                .Where(IsSupported)
-                .Where(element => !ShouldSkipElement(document, element))
+                .Where(element => IsSupported(element, scope))
+                .Where(element => !ShouldSkipElement(document, element!))
+                .Cast<Element>()
                 .ToList();
         }
 
         return new FilteredElementCollector(document)
             .WhereElementIsNotElementType()
-            .Where(element =>
-                element.Category?.Id.Value == (long)BuiltInCategory.OST_DuctCurves ||
-                element.Category?.Id.Value == (long)BuiltInCategory.OST_DuctFitting)
+            .Where(element => IsSupported(element, scope))
             .Where(element => !ShouldSkipElement(document, element))
             .ToList();
     }
@@ -81,113 +92,189 @@ public sealed class DuctFittingNumberingService
             .ToList();
     }
 
-    public DuctFittingNumberingResult Apply(Document document, IEnumerable<Element> elements, string targetParameterName, string lengthParameterName)
+    public DuctFittingNumberingResult Apply(
+        Document document,
+        IEnumerable<Element> elements,
+        string targetParameterName,
+        string? lengthParameterName,
+        bool includeSystemParameter,
+        NumberingScope scope = NumberingScope.DuctsAndFittings)
     {
-        Dictionary<string, SystemGroup> groups = GroupElements(document, elements, lengthParameterName);
+        List<Element> filteredElements = elements
+            .Where(element => IsSupported(element, scope))
+            .ToList();
+
+        GroupedElements groups = GroupElements(document, filteredElements, lengthParameterName, scope);
         DuctFittingNumberingResult result = new()
         {
-            SystemsCount = groups.Count,
-            LengthParameterName = lengthParameterName,
-            TargetParameterName = targetParameterName
+            SystemsCount = groups.SystemsCount,
+            LengthParameterName = lengthParameterName ?? string.Empty,
+            TargetParameterName = targetParameterName,
+            IncludeSystemParameter = includeSystemParameter
         };
 
         using Transaction transaction = new(document, "Duct and Fitting Numbering");
         transaction.Start();
 
-        foreach (string systemAbbreviation in groups.Keys.OrderBy(key => key, StringComparer.CurrentCultureIgnoreCase))
+        int currentNumber = 1;
+
+        foreach ((DuctKey _, NumberingGroup group) in groups.Ducts.OrderBy(pair => pair.Key, DuctKeyComparer.Instance))
         {
-            SystemGroup group = groups[systemAbbreviation];
-            int currentNumber = 1;
-
-            foreach (var pair in group.Ducts.OrderBy(pair => pair.Key, DuctKeyComparer.Instance))
+            string value = FormatNumber(group, currentNumber, includeSystemParameter);
+            foreach (Element element in group.Elements)
             {
-                string value = FormatNumber(systemAbbreviation, currentNumber);
-                foreach (Element element in pair.Value)
-                {
-                    SetPositionNumber(element, targetParameterName, value);
-                }
-
-                result.DuctCount += pair.Value.Count;
-                result.TotalCount += pair.Value.Count;
-                result.SharedNumberCount += Math.Max(0, pair.Value.Count - 1);
-                currentNumber++;
+                SetPositionNumber(element, targetParameterName, value);
             }
 
-            foreach (var pair in group.Fittings.OrderBy(pair => pair.Key, FittingKeyComparer.Instance))
-            {
-                string value = FormatNumber(systemAbbreviation, currentNumber);
-                foreach (Element element in pair.Value)
-                {
-                    SetPositionNumber(element, targetParameterName, value);
-                }
+            result.DuctCount += group.Elements.Count;
+            result.TotalCount += group.Elements.Count;
+            result.SharedNumberCount += Math.Max(0, group.Elements.Count - 1);
+            currentNumber++;
+        }
 
-                result.FittingCount += pair.Value.Count;
-                result.TotalCount += pair.Value.Count;
-                result.SharedNumberCount += Math.Max(0, pair.Value.Count - 1);
-                currentNumber++;
+        foreach ((ComponentKey _, NumberingGroup group) in groups.Fittings.OrderBy(pair => pair.Key, ComponentKeyComparer.Instance))
+        {
+            string value = FormatNumber(group, currentNumber, includeSystemParameter);
+            foreach (Element element in group.Elements)
+            {
+                SetPositionNumber(element, targetParameterName, value);
             }
+
+            result.FittingCount += group.Elements.Count;
+            result.TotalCount += group.Elements.Count;
+            result.SharedNumberCount += Math.Max(0, group.Elements.Count - 1);
+            currentNumber++;
+        }
+
+        foreach ((ComponentKey _, NumberingGroup group) in groups.Accessories.OrderBy(pair => pair.Key, ComponentKeyComparer.Instance))
+        {
+            string value = FormatNumber(group, currentNumber, includeSystemParameter);
+            foreach (Element element in group.Elements)
+            {
+                SetPositionNumber(element, targetParameterName, value);
+            }
+
+            result.AccessoryCount += group.Elements.Count;
+            result.TotalCount += group.Elements.Count;
+            result.SharedNumberCount += Math.Max(0, group.Elements.Count - 1);
+            currentNumber++;
         }
 
         transaction.Commit();
         result.Messages.Add("Pominieto rodziny 'L_Flange_RV' oraz typy z Manufacturer = 'FabricAir'.");
+        result.Messages.Add("Grupy z mieszanymi System Abbreviation dostaja numer bez prefiksu systemu.");
+        if (includeSystemParameter)
+        {
+            result.Messages.Add("Jesli grupa ma jedna wspolna wartosc HC_System, zostaje ona dodana do numeru.");
+        }
+
         return result;
     }
 
-    private static bool IsSupported(Element? element)
+    private static bool IsSupported(Element? element, NumberingScope scope)
     {
         long? categoryId = element?.Category?.Id.Value;
-        return categoryId == (long)BuiltInCategory.OST_DuctCurves || categoryId == (long)BuiltInCategory.OST_DuctFitting;
+        return scope switch
+        {
+            NumberingScope.Ducts => categoryId == (long)BuiltInCategory.OST_DuctCurves,
+            NumberingScope.Fittings => categoryId == (long)BuiltInCategory.OST_DuctFitting || categoryId == (long)BuiltInCategory.OST_DuctAccessory,
+            _ => categoryId == (long)BuiltInCategory.OST_DuctCurves || categoryId == (long)BuiltInCategory.OST_DuctFitting || categoryId == (long)BuiltInCategory.OST_DuctAccessory
+        };
     }
 
-    private static Dictionary<string, SystemGroup> GroupElements(Document document, IEnumerable<Element> elements, string lengthParameterName)
+    private static GroupedElements GroupElements(
+        Document document,
+        IEnumerable<Element> elements,
+        string? lengthParameterName,
+        NumberingScope scope)
     {
-        Dictionary<string, SystemGroup> groups = new(StringComparer.CurrentCultureIgnoreCase);
+        GroupedElements grouped = new();
+        HashSet<string> systems = new(StringComparer.CurrentCultureIgnoreCase);
 
         foreach (Element element in elements)
         {
-            string systemAbbreviation = GetSystemAbbreviation(document, element);
-            if (!groups.TryGetValue(systemAbbreviation, out SystemGroup? group))
+            string systemAbbreviation = NormalizeValue(GetSystemAbbreviation(document, element));
+            string systemParameterValue = NormalizeValue(GetText(element, "HC_System"));
+            if (!string.IsNullOrWhiteSpace(systemAbbreviation))
             {
-                group = new SystemGroup();
-                groups[systemAbbreviation] = group;
+                systems.Add(systemAbbreviation);
             }
 
             long? categoryId = element.Category?.Id.Value;
-            if (categoryId == (long)BuiltInCategory.OST_DuctCurves)
+            if (categoryId == (long)BuiltInCategory.OST_DuctCurves && scope != NumberingScope.Fittings)
             {
-                DuctKey key = BuildDuctKey(element, lengthParameterName);
-                group.Ducts.TryAdd(key, []);
-                group.Ducts[key].Add(element);
+                DuctKey key = BuildDuctKey(document, element, lengthParameterName ?? "Length");
+                if (!grouped.Ducts.TryGetValue(key, out NumberingGroup? ductGroup))
+                {
+                    ductGroup = new NumberingGroup();
+                    grouped.Ducts[key] = ductGroup;
+                }
+
+                ductGroup.Elements.Add(element);
+                ductGroup.SystemAbbreviations.Add(systemAbbreviation);
+                ductGroup.SystemParameterValues.Add(systemParameterValue);
             }
-            else if (categoryId == (long)BuiltInCategory.OST_DuctFitting)
+            else if (categoryId == (long)BuiltInCategory.OST_DuctFitting && scope != NumberingScope.Ducts)
             {
-                FittingKey key = BuildFittingKey(element);
-                group.Fittings.TryAdd(key, []);
-                group.Fittings[key].Add(element);
+                ComponentKey key = BuildComponentKey(element, BuiltInCategory.OST_DuctFitting);
+                if (!grouped.Fittings.TryGetValue(key, out NumberingGroup? fittingGroup))
+                {
+                    fittingGroup = new NumberingGroup();
+                    grouped.Fittings[key] = fittingGroup;
+                }
+
+                fittingGroup.Elements.Add(element);
+                fittingGroup.SystemAbbreviations.Add(systemAbbreviation);
+                fittingGroup.SystemParameterValues.Add(systemParameterValue);
+            }
+            else if (categoryId == (long)BuiltInCategory.OST_DuctAccessory && scope != NumberingScope.Ducts)
+            {
+                ComponentKey key = BuildComponentKey(element, BuiltInCategory.OST_DuctAccessory);
+                if (!grouped.Accessories.TryGetValue(key, out NumberingGroup? accessoryGroup))
+                {
+                    accessoryGroup = new NumberingGroup();
+                    grouped.Accessories[key] = accessoryGroup;
+                }
+
+                accessoryGroup.Elements.Add(element);
+                accessoryGroup.SystemAbbreviations.Add(systemAbbreviation);
+                accessoryGroup.SystemParameterValues.Add(systemParameterValue);
             }
         }
 
-        return groups;
+        grouped.SystemsCount = systems.Count;
+        return grouped;
     }
 
-    private static DuctKey BuildDuctKey(Element element, string lengthParameterName)
+    private static DuctKey BuildDuctKey(Document document, Element element, string lengthParameterName)
     {
         string size = GetText(element, "Size");
+        string typeName = GetTypeName(document, element);
+        if (IsRoundElement(element))
+        {
+            return new(size, null, typeName, true);
+        }
+
         double? length = GetLengthMillimeters(element, ResolveLengthParameterName(element, lengthParameterName), 1.0);
-        return new(size, length);
+        return new(size, length, typeName, false);
     }
 
-    private static FittingKey BuildFittingKey(Element element)
+    private static ComponentKey BuildComponentKey(Element element, BuiltInCategory category)
     {
-        List<double?> dimensions = FittingDimensionParameterNames
-            .Select(name => GetLengthMillimeters(element, name, 1.0))
-            .ToList();
+        List<string> values = [];
+        foreach (string parameterName in FittingGroupingParameterNames)
+        {
+            values.Add(GetGroupingParameterValue(element, parameterName));
+        }
 
-        return new(
-            GetText(element, "Size"),
-            GetText(element, "LIN_VE_DIM_TYP"),
-            dimensions,
-            GetAngleDegrees(element, "LIN_VE_ANG_W", 0.1));
+        return new(category, values);
+    }
+
+    private static string GetGroupingParameterValue(Element element, string parameterName)
+    {
+        return parameterName == "LIN_VE_ANG_W"
+            ? FormatNullable(GetAngleDegrees(element, parameterName, 0.1))
+            : FormatNullable(GetLengthMillimeters(element, parameterName, 1.0, true));
     }
 
     private static string ResolveLengthParameterName(Element element, string requestedName)
@@ -265,10 +352,14 @@ public sealed class DuctFittingNumberingService
 
         if (system == null && element is FamilyInstance familyInstance)
         {
-            system = familyInstance.MEPModel?.ConnectorManager?.Connectors
-                .Cast<Connector>()
-                .Select(connector => connector.MEPSystem)
-                .FirstOrDefault(candidate => candidate != null);
+            ConnectorSet? connectors = familyInstance.MEPModel?.ConnectorManager?.Connectors;
+            if (connectors != null)
+            {
+                system = connectors
+                    .Cast<Connector>()
+                    .Select(connector => connector.MEPSystem)
+                    .FirstOrDefault(candidate => candidate != null);
+            }
         }
 
         if (system == null)
@@ -292,28 +383,95 @@ public sealed class DuctFittingNumberingService
         return (parameter.AsString() ?? parameter.AsValueString() ?? string.Empty).Trim();
     }
 
-    private static double? GetLengthMillimeters(Element element, string parameterName, double precisionMillimeters)
+    private static string GetTypeName(Document document, Element element)
+    {
+        Element? symbol = document.GetElement(element.GetTypeId());
+        return (symbol?.Name ?? element.Name ?? string.Empty).Trim();
+    }
+
+    private static bool IsRoundElement(Element element)
+    {
+        ConnectorSet? connectors = GetConnectors(element);
+        if (connectors == null)
+        {
+            return false;
+        }
+
+        bool hasAnyConnector = false;
+        foreach (Connector connector in connectors)
+        {
+            hasAnyConnector = true;
+            if (connector.Shape != ConnectorProfileType.Round)
+            {
+                return false;
+            }
+        }
+
+        return hasAnyConnector;
+    }
+
+    private static ConnectorSet? GetConnectors(Element element)
+    {
+        if (element is MEPCurve mepCurve)
+        {
+            return mepCurve.ConnectorManager?.Connectors;
+        }
+
+        if (element is FamilyInstance familyInstance)
+        {
+            return familyInstance.MEPModel?.ConnectorManager?.Connectors;
+        }
+
+        return null;
+    }
+
+    private static double? GetLengthMillimeters(Element element, string parameterName, double precisionMillimeters, bool allowTextFallback = false)
     {
         Parameter? parameter = element.LookupParameter(parameterName);
-        if (parameter == null || !parameter.HasValue || parameter.StorageType != StorageType.Double)
+        if (parameter == null || !parameter.HasValue)
         {
             return null;
         }
 
-        double millimeters = UnitUtils.ConvertFromInternalUnits(parameter.AsDouble(), UnitTypeId.Millimeters);
-        return RoundToPrecision(millimeters, precisionMillimeters);
+        if (parameter.StorageType == StorageType.Double)
+        {
+            double millimeters = UnitUtils.ConvertFromInternalUnits(parameter.AsDouble(), UnitTypeId.Millimeters);
+            return RoundToPrecision(millimeters, precisionMillimeters);
+        }
+
+        if (allowTextFallback)
+        {
+            string text = (parameter.AsString() ?? parameter.AsValueString() ?? string.Empty).Trim();
+            if (double.TryParse(text.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsed))
+            {
+                return RoundToPrecision(parsed, precisionMillimeters);
+            }
+        }
+
+        return null;
     }
 
     private static double? GetAngleDegrees(Element element, string parameterName, double precisionDegrees)
     {
         Parameter? parameter = element.LookupParameter(parameterName);
-        if (parameter == null || !parameter.HasValue || parameter.StorageType != StorageType.Double)
+        if (parameter == null || !parameter.HasValue)
         {
             return null;
         }
 
-        double degrees = UnitUtils.ConvertFromInternalUnits(parameter.AsDouble(), UnitTypeId.Degrees);
-        return RoundToPrecision(degrees, precisionDegrees);
+        if (parameter.StorageType == StorageType.Double)
+        {
+            double degrees = UnitUtils.ConvertFromInternalUnits(parameter.AsDouble(), UnitTypeId.Degrees);
+            return RoundToPrecision(degrees, precisionDegrees);
+        }
+
+        string text = (parameter.AsString() ?? parameter.AsValueString() ?? string.Empty).Trim();
+        if (double.TryParse(text.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double parsed))
+        {
+            return RoundToPrecision(parsed, precisionDegrees);
+        }
+
+        return null;
     }
 
     private static double RoundToPrecision(double value, double precision)
@@ -321,9 +479,45 @@ public sealed class DuctFittingNumberingService
         return Math.Round(value / precision) * precision;
     }
 
-    private static string FormatNumber(string prefix, int number)
+    private static string NormalizeValue(string? value)
     {
-        return string.IsNullOrWhiteSpace(prefix) ? number.ToString() : $"{prefix}.{number}";
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+    }
+
+    private static string FormatNullable(double? value)
+    {
+        return value?.ToString("0.###") ?? string.Empty;
+    }
+
+    private static string FormatNumber(NumberingGroup group, int number, bool includeSystemParameter)
+    {
+        List<string> parts = [];
+
+        if (includeSystemParameter)
+        {
+            List<string> distinctSystemParameters = group.SystemParameterValues
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
+
+            if (distinctSystemParameters.Count == 1)
+            {
+                parts.Add(distinctSystemParameters[0]);
+            }
+        }
+
+        List<string> distinctAbbreviations = group.SystemAbbreviations
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+
+        if (distinctAbbreviations.Count == 1)
+        {
+            parts.Add(distinctAbbreviations[0]);
+        }
+
+        parts.Add(number.ToString());
+        return string.Join('.', parts);
     }
 
     private static void SetPositionNumber(Element element, string targetParameterName, string value)
@@ -337,16 +531,29 @@ public sealed class DuctFittingNumberingService
         parameter.Set(value);
     }
 
-    private sealed class SystemGroup
+    private sealed class GroupedElements
     {
-        public Dictionary<DuctKey, List<Element>> Ducts { get; } = [];
+        public Dictionary<DuctKey, NumberingGroup> Ducts { get; } = [];
 
-        public Dictionary<FittingKey, List<Element>> Fittings { get; } = [];
+        public Dictionary<ComponentKey, NumberingGroup> Fittings { get; } = [];
+
+        public Dictionary<ComponentKey, NumberingGroup> Accessories { get; } = [];
+
+        public int SystemsCount { get; set; }
     }
 
-    private sealed record DuctKey(string Size, double? Length);
+    private sealed class NumberingGroup
+    {
+        public List<Element> Elements { get; } = [];
 
-    private sealed record FittingKey(string Size, string DimensionType, IReadOnlyList<double?> Dimensions, double? Angle);
+        public HashSet<string> SystemAbbreviations { get; } = new(StringComparer.CurrentCultureIgnoreCase);
+
+        public HashSet<string> SystemParameterValues { get; } = new(StringComparer.CurrentCultureIgnoreCase);
+    }
+
+    private sealed record DuctKey(string Size, double? Length, string TypeName, bool IsRound);
+
+    private sealed record ComponentKey(BuiltInCategory Category, IReadOnlyList<string> Values);
 
     private sealed class DuctKeyComparer : IComparer<DuctKey>
     {
@@ -369,6 +576,18 @@ public sealed class DuctFittingNumberingService
                 return 1;
             }
 
+            int roundComparison = x.IsRound.CompareTo(y.IsRound);
+            if (roundComparison != 0)
+            {
+                return roundComparison;
+            }
+
+            int typeComparison = string.Compare(x.TypeName ?? string.Empty, y.TypeName ?? string.Empty, StringComparison.CurrentCultureIgnoreCase);
+            if (typeComparison != 0)
+            {
+                return typeComparison;
+            }
+
             int sizeComparison = string.Compare(x.Size ?? string.Empty, y.Size ?? string.Empty, StringComparison.CurrentCultureIgnoreCase);
             if (sizeComparison != 0)
             {
@@ -379,11 +598,11 @@ public sealed class DuctFittingNumberingService
         }
     }
 
-    private sealed class FittingKeyComparer : IComparer<FittingKey>
+    private sealed class ComponentKeyComparer : IComparer<ComponentKey>
     {
-        public static FittingKeyComparer Instance { get; } = new();
+        public static ComponentKeyComparer Instance { get; } = new();
 
-        public int Compare(FittingKey? x, FittingKey? y)
+        public int Compare(ComponentKey? x, ComponentKey? y)
         {
             if (ReferenceEquals(x, y))
             {
@@ -400,31 +619,25 @@ public sealed class DuctFittingNumberingService
                 return 1;
             }
 
-            int sizeComparison = string.Compare(x.Size ?? string.Empty, y.Size ?? string.Empty, StringComparison.CurrentCultureIgnoreCase);
-            if (sizeComparison != 0)
+            int categoryComparison = x.Category.CompareTo(y.Category);
+            if (categoryComparison != 0)
             {
-                return sizeComparison;
+                return categoryComparison;
             }
 
-            int typeComparison = string.Compare(x.DimensionType ?? string.Empty, y.DimensionType ?? string.Empty, StringComparison.CurrentCultureIgnoreCase);
-            if (typeComparison != 0)
+            int count = Math.Max(x.Values.Count, y.Values.Count);
+            for (int index = 0; index < count; index++)
             {
-                return typeComparison;
-            }
-
-            int dimensionCount = Math.Max(x.Dimensions.Count, y.Dimensions.Count);
-            for (int index = 0; index < dimensionCount; index++)
-            {
-                double? left = index < x.Dimensions.Count ? x.Dimensions[index] : null;
-                double? right = index < y.Dimensions.Count ? y.Dimensions[index] : null;
-                int compare = Nullable.Compare(left, right);
+                string left = index < x.Values.Count ? x.Values[index] ?? string.Empty : string.Empty;
+                string right = index < y.Values.Count ? y.Values[index] ?? string.Empty : string.Empty;
+                int compare = string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                 if (compare != 0)
                 {
                     return compare;
                 }
             }
 
-            return Nullable.Compare(x.Angle, y.Angle);
+            return 0;
         }
     }
 }

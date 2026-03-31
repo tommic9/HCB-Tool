@@ -6,19 +6,35 @@ namespace HCB.RevitAddin.Features.CadLinkGraphicsCopy;
 
 public sealed class CadLinkGraphicsCopyService
 {
-    public IReadOnlyList<ImportInstance> GetAvailableCadInstances(Document document)
+    public IReadOnlyList<View> GetSupportedViews(Document document)
+    {
+        return new FilteredElementCollector(document)
+            .OfClass(typeof(View))
+            .Cast<View>()
+            .Where(IsSupportedView)
+            .OrderByDescending(view => view.IsTemplate)
+            .ThenBy(view => view.ViewType.ToString(), StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(view => view.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+    }
+
+    public IReadOnlyList<ImportInstance> GetSelectableCadInstances(Document document, View contextView)
     {
         return new FilteredElementCollector(document)
             .OfClass(typeof(ImportInstance))
             .Cast<ImportInstance>()
             .Where(instance => instance.Category != null)
+            .Where(instance => IsInstanceAvailableInContext(instance, contextView))
+            .GroupBy(instance => instance.Category!.Id.Value)
+            .Select(group => group.OrderBy(instance => GetCadSourceName(instance), StringComparer.CurrentCultureIgnoreCase).First())
             .OrderBy(instance => GetDisplayName(instance), StringComparer.CurrentCultureIgnoreCase)
             .ToList();
     }
 
     public CadLinkGraphicsCopyResult CopyViewOverrides(
         Document document,
-        View view,
+        View sourceView,
+        View targetView,
         ImportInstance sourceInstance,
         ImportInstance targetInstance)
     {
@@ -37,8 +53,7 @@ public sealed class CadLinkGraphicsCopyService
         using Transaction transaction = new(document, "Copy CAD Link Graphics");
         transaction.Start();
 
-        CopyCategorySettings(view, sourceCategory, targetCategory);
-        result.UpdatedCategoryCount++;
+        CopyCategoryVisibility(sourceView, targetView, sourceCategory, targetCategory, result);
 
         foreach (Category sourceLayer in sourceLayers)
         {
@@ -50,9 +65,8 @@ public sealed class CadLinkGraphicsCopyService
                 continue;
             }
 
-            CopyCategorySettings(view, sourceLayer, targetLayer);
+            CopyCategorySettings(sourceView, targetView, sourceLayer, targetLayer, result);
             result.MatchedLayerCount++;
-            result.UpdatedCategoryCount++;
         }
 
         transaction.Commit();
@@ -62,17 +76,111 @@ public sealed class CadLinkGraphicsCopyService
     public string GetDisplayName(ImportInstance instance)
     {
         string mode = instance.IsLinked ? "Link" : "Import";
-        string categoryName = instance.Category?.Name ?? "Brak kategorii";
-        return $"{instance.Name} [{mode}] - {categoryName}";
+        string cadName = GetCadSourceName(instance);
+        string viewInfo = GetViewContextLabel(instance);
+        return $"{cadName} [{mode}] | {viewInfo}";
     }
 
-    private static void CopyCategorySettings(View view, Category sourceCategory, Category targetCategory)
+    public string GetViewContextLabel(ImportInstance instance)
     {
-        OverrideGraphicSettings overrides = view.GetCategoryOverrides(sourceCategory.Id);
-        bool isHidden = view.GetCategoryHidden(sourceCategory.Id);
+        if (!instance.ViewSpecific)
+        {
+            return "Model-wide";
+        }
 
-        view.SetCategoryOverrides(targetCategory.Id, overrides);
-        view.SetCategoryHidden(targetCategory.Id, isHidden);
+        ElementId ownerViewId = instance.OwnerViewId;
+        if (ownerViewId == ElementId.InvalidElementId)
+        {
+            return "Widok: nieznany";
+        }
+
+        View? ownerView = instance.Document.GetElement(ownerViewId) as View;
+        return ownerView == null ? "Widok: nieznany" : $"Widok: {ownerView.Name}";
+    }
+
+    public string GetViewDisplayName(View view)
+    {
+        string scope = view.IsTemplate ? "Template" : view.ViewType.ToString();
+        return $"{view.Name} [{scope}]";
+    }
+
+    private string GetCadSourceName(ImportInstance instance)
+    {
+        Element? typeElement = instance.Document.GetElement(instance.GetTypeId());
+        if (typeElement != null && !string.IsNullOrWhiteSpace(typeElement.Name))
+        {
+            return typeElement.Name;
+        }
+
+        string? categoryName = instance.Category?.Name;
+        if (!string.IsNullOrWhiteSpace(categoryName))
+        {
+            return categoryName;
+        }
+
+        return instance.Name;
+    }
+
+    private static bool IsInstanceAvailableInContext(ImportInstance instance, View contextView)
+    {
+        if (!instance.ViewSpecific)
+        {
+            return true;
+        }
+
+        View? ownerView = instance.Document.GetElement(instance.OwnerViewId) as View;
+        if (ownerView == null)
+        {
+            return false;
+        }
+
+        if (contextView.IsTemplate)
+        {
+            return ownerView.ViewTemplateId == contextView.Id;
+        }
+
+        return ownerView.Id == contextView.Id;
+    }
+
+    private static void CopyCategoryVisibility(
+        View sourceView,
+        View targetView,
+        Category sourceCategory,
+        Category targetCategory,
+        CadLinkGraphicsCopyResult result)
+    {
+        try
+        {
+            bool isHidden = sourceView.GetCategoryHidden(sourceCategory.Id);
+            targetView.SetCategoryHidden(targetCategory.Id, isHidden);
+            result.UpdatedCategoryCount++;
+        }
+        catch (Exception exception)
+        {
+            result.Messages.Add($"Nie udalo sie skopiowac widocznosci kategorii {sourceCategory.Name}: {exception.Message}");
+        }
+    }
+
+    private static void CopyCategorySettings(
+        View sourceView,
+        View targetView,
+        Category sourceCategory,
+        Category targetCategory,
+        CadLinkGraphicsCopyResult result)
+    {
+        try
+        {
+            OverrideGraphicSettings overrides = sourceView.GetCategoryOverrides(sourceCategory.Id);
+            bool isHidden = sourceView.GetCategoryHidden(sourceCategory.Id);
+
+            targetView.SetCategoryOverrides(targetCategory.Id, overrides);
+            targetView.SetCategoryHidden(targetCategory.Id, isHidden);
+            result.UpdatedCategoryCount++;
+        }
+        catch (Exception exception)
+        {
+            result.Messages.Add($"Nie udalo sie skopiowac warstwy {sourceCategory.Name}: {exception.Message}");
+        }
     }
 
     private static IReadOnlyList<Category> GetLayers(Category category)
@@ -98,5 +206,28 @@ public sealed class CadLinkGraphicsCopyService
     private static string NormalizeLayerName(string name)
     {
         return name.Trim().ToUpperInvariant();
+    }
+
+    private static bool IsSupportedView(View view)
+    {
+        if (view.IsAssemblyView)
+        {
+            return false;
+        }
+
+        if (!view.CanBePrinted && !view.IsTemplate)
+        {
+            return false;
+        }
+
+        try
+        {
+            _ = view.ViewType;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
@@ -23,6 +23,8 @@ public sealed class AccessoryTerminalNumberingCommand : IExternalCommand
         try
         {
             Document document = uiDocument.Document;
+            bool hasSelection = uiDocument.Selection.GetElementIds().Count > 0;
+            string scopeLabel = hasSelection ? "Zaznaczenie" : "Caly model";
             AccessoryTerminalNumberingService service = new();
 
             var targets = service.CollectTargets(document, uiDocument.Selection.GetElementIds());
@@ -40,9 +42,9 @@ public sealed class AccessoryTerminalNumberingCommand : IExternalCommand
             }
 
             var availableAccessoryTypeParameters = service.GetAccessoryTypeParameterNames(document, targets);
-            bool hasDuctAccessories = targets.Any(element => element.Category?.Id.Value == (long)BuiltInCategory.OST_DuctAccessory);
-            bool hasPipeAccessories = targets.Any(element => element.Category?.Id.Value == (long)BuiltInCategory.OST_PipeAccessory);
-            bool hasAirTerminals = targets.Any(element => element.Category?.Id.Value == (long)BuiltInCategory.OST_DuctTerminal);
+            bool hasDuctAccessories = targets.Any(element => GetCategoryId(element) == (long)BuiltInCategory.OST_DuctAccessory);
+            bool hasPipeAccessories = targets.Any(element => GetCategoryId(element) == (long)BuiltInCategory.OST_PipeAccessory);
+            bool hasAirTerminals = targets.Any(element => GetCategoryId(element) == (long)BuiltInCategory.OST_DuctTerminal);
 
             AccessoryTerminalNumberingWindow window = new(
                 availableTargetParameters,
@@ -59,15 +61,20 @@ public sealed class AccessoryTerminalNumberingCommand : IExternalCommand
             AccessoryTerminalNumberingResult result = service.Apply(document, targets, window.Options);
             TaskDialog.Show(
                 "MEP Item Numbering",
-                $"Ponumerowano: {result.TotalCount}\nAkcesoria kanalowe: {result.DuctAccessoryCount}\nAkcesoria rurowe: {result.PipeAccessoryCount}\nTerminale: {result.TerminalCount}\nWspoldzielony numer: {result.SharedNumberCount}\nSystemy: {result.SystemsCount}\nParametr docelowy: {result.TargetParameterName}\nParametr typu akcesoriow: {(string.IsNullOrWhiteSpace(result.AccessoryTypeParameterName) ? "(brak)" : result.AccessoryTypeParameterName)}");
+                $"Tryb: {scopeLabel}\nPonumerowano: {result.TotalCount}\nAkcesoria kanalowe: {result.DuctAccessoryCount}\nAkcesoria rurowe: {result.PipeAccessoryCount}\nTerminale: {result.TerminalCount}\nWspoldzielony numer: {result.SharedNumberCount}\nSystemy: {result.SystemsCount}\nParametr docelowy: {result.TargetParameterName}\nParametr typu akcesoriow: {(string.IsNullOrWhiteSpace(result.AccessoryTypeParameterName) ? "(brak)" : result.AccessoryTypeParameterName)}");
 
             return Result.Succeeded;
         }
         catch (Exception ex)
         {
             message = ex.Message;
-            TaskDialog.Show("MEP Item Numbering", $"Nie udalo sie wykonac numeracji.\n\n{ex.Message}");
+            TaskDialog.Show("MEP Item Numbering", $"Nie udalo sie wykonac numeracji.\n\n{ex}");
             return Result.Failed;
         }
     }
+    private static long? GetCategoryId(Element? element)
+    {
+        return element?.Category?.Id?.Value;
+    }
 }
+

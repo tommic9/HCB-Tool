@@ -16,35 +16,71 @@ public sealed class CadLinkGraphicsCopyCommand : IExternalCommand
         View activeView = document.ActiveView;
         CadLinkGraphicsCopyService service = new();
 
-        IReadOnlyList<ImportInstance> availableInstances = service.GetAvailableCadInstances(document);
-        if (availableInstances.Count < 2)
+        IReadOnlyList<View> availableViews = service.GetSupportedViews(document);
+        if (availableViews.Count == 0)
         {
-            TaskDialog.Show("CAD Link Graphics", "Potrzebne sa co najmniej dwa linki lub importy CAD w projekcie.");
+            TaskDialog.Show("CAD Link Graphics", "Brak obslugiwanych widokow lub template'ow w projekcie.");
+            return Result.Succeeded;
+        }
+
+        View? sourceView = SelectSingleView(
+            service,
+            availableViews,
+            activeView,
+            "CAD Link Graphics",
+            "Widok zrodlowy",
+            "Wybierz widok lub template, z ktorego chcesz pobrac ustawienia warstw CAD.");
+
+        if (sourceView == null)
+        {
+            return Result.Cancelled;
+        }
+
+        IReadOnlyList<ImportInstance> sourceCandidates = service.GetSelectableCadInstances(document, sourceView);
+        if (sourceCandidates.Count == 0)
+        {
+            TaskDialog.Show("CAD Link Graphics", $"Brak linkow lub importow CAD dostepnych dla {service.GetViewDisplayName(sourceView)}.");
             return Result.Succeeded;
         }
 
         ImportInstance? sourceInstance = SelectSingleInstance(
             service,
-            availableInstances,
+            sourceCandidates,
             "CAD Link Graphics",
             "Link zrodlowy",
-            "Wybierz link CAD, z ktorego chcesz skopiowac nadpisania i widocznosc warstw.");
+            "Wybierz link CAD, z ktorego chcesz skopiowac ustawienia warstw.");
 
         if (sourceInstance == null)
         {
             return Result.Cancelled;
         }
 
-        IReadOnlyList<ImportInstance> targetCandidates = availableInstances
-            .Where(instance => instance.Id != sourceInstance.Id)
-            .ToList();
+        View? targetView = SelectSingleView(
+            service,
+            availableViews,
+            activeView,
+            "CAD Link Graphics",
+            "Widok docelowy",
+            "Wybierz widok lub template, do ktorego chcesz skopiowac ustawienia warstw CAD.");
+
+        if (targetView == null)
+        {
+            return Result.Cancelled;
+        }
+
+        IReadOnlyList<ImportInstance> targetCandidates = service.GetSelectableCadInstances(document, targetView);
+        if (targetCandidates.Count == 0)
+        {
+            TaskDialog.Show("CAD Link Graphics", $"Brak linkow lub importow CAD dostepnych dla {service.GetViewDisplayName(targetView)}.");
+            return Result.Succeeded;
+        }
 
         ImportInstance? targetInstance = SelectSingleInstance(
             service,
             targetCandidates,
             "CAD Link Graphics",
             "Link docelowy",
-            "Wybierz link CAD, do ktorego chcesz skopiowac ustawienia z aktywnego widoku.");
+            "Wybierz link CAD, do ktorego chcesz skopiowac ustawienia warstw.");
 
         if (targetInstance == null)
         {
@@ -53,12 +89,13 @@ public sealed class CadLinkGraphicsCopyCommand : IExternalCommand
 
         try
         {
-            var result = service.CopyViewOverrides(document, activeView, sourceInstance, targetInstance);
+            var result = service.CopyViewOverrides(document, sourceView, targetView, sourceInstance, targetInstance);
 
             string summary =
-                $"Widok: {activeView.Name}\n" +
-                $"Zrodlo: {service.GetDisplayName(sourceInstance)}\n" +
-                $"Cel: {service.GetDisplayName(targetInstance)}\n\n" +
+                $"Widok zrodlowy: {service.GetViewDisplayName(sourceView)}\n" +
+                $"Widok docelowy: {service.GetViewDisplayName(targetView)}\n" +
+                $"Link zrodlowy: {service.GetDisplayName(sourceInstance)}\n" +
+                $"Link docelowy: {service.GetDisplayName(targetInstance)}\n\n" +
                 $"Warstwy zrodla: {result.SourceLayerCount}\n" +
                 $"Dopasowane warstwy: {result.MatchedLayerCount}\n" +
                 $"Brakujace warstwy: {result.MissingLayerCount}\n" +
@@ -79,6 +116,48 @@ public sealed class CadLinkGraphicsCopyCommand : IExternalCommand
         }
     }
 
+    private static View? SelectSingleView(
+        CadLinkGraphicsCopyService service,
+        IReadOnlyList<View> views,
+        View activeView,
+        string title,
+        string sectionTitle,
+        string statusText)
+    {
+        while (true)
+        {
+            SelectionListWindow window = new(
+                title,
+                sectionTitle,
+                views.Select(view => new SelectionListItem(
+                    view.Id,
+                    service.GetViewDisplayName(view),
+                    view.IsTemplate ? "Template" : "Widok",
+                    view.IsTemplate ? "Template" : view.ViewType.ToString())),
+                new[] { (object)activeView.Id },
+                "Wybierz",
+                statusText,
+                activeView.Id,
+                "Aktywny widok",
+                "Typ",
+                "Rodzaj");
+
+            if (window.ShowDialog() != true)
+            {
+                return null;
+            }
+
+            IReadOnlyList<ElementId> selectedIds = window.SelectedValues.Cast<ElementId>().ToList();
+            if (selectedIds.Count == 1)
+            {
+                ElementId selectedId = selectedIds[0];
+                return views.FirstOrDefault(view => view.Id == selectedId);
+            }
+
+            TaskDialog.Show(title, "Wybierz dokladnie jeden widok lub template.");
+        }
+    }
+
     private static ImportInstance? SelectSingleInstance(
         CadLinkGraphicsCopyService service,
         IReadOnlyList<ImportInstance> instances,
@@ -86,33 +165,37 @@ public sealed class CadLinkGraphicsCopyCommand : IExternalCommand
         string sectionTitle,
         string statusText)
     {
-        SelectionListWindow window = new(
-            title,
-            sectionTitle,
-            instances.Select(instance => new SelectionListItem(
-                instance.Id,
-                service.GetDisplayName(instance),
-                instance.IsLinked ? "Link" : "Import")),
-            Array.Empty<object>(),
-            "Wybierz",
-            statusText,
-            null,
-            "Aktywny element",
-            "Typ");
-
-        if (window.ShowDialog() != true)
+        while (true)
         {
-            return null;
-        }
+            SelectionListWindow window = new(
+                title,
+                sectionTitle,
+                instances.Select(instance => new SelectionListItem(
+                    instance.Id,
+                    service.GetDisplayName(instance),
+                    instance.IsLinked ? "Link" : "Import",
+                    instance.ViewSpecific ? "Widok-specific" : "Model-wide")),
+                Array.Empty<object>(),
+                "Wybierz",
+                statusText,
+                null,
+                "Aktywny element",
+                "Typ",
+                "Zakres");
 
-        IReadOnlyList<ElementId> selectedIds = window.SelectedValues.Cast<ElementId>().ToList();
-        if (selectedIds.Count != 1)
-        {
+            if (window.ShowDialog() != true)
+            {
+                return null;
+            }
+
+            IReadOnlyList<ElementId> selectedIds = window.SelectedValues.Cast<ElementId>().ToList();
+            if (selectedIds.Count == 1)
+            {
+                ElementId selectedId = selectedIds[0];
+                return instances.FirstOrDefault(instance => instance.Id == selectedId);
+            }
+
             TaskDialog.Show(title, "Wybierz dokladnie jeden link CAD.");
-            return null;
         }
-
-        ElementId selectedId = selectedIds[0];
-        return instances.FirstOrDefault(instance => instance.Id == selectedId);
     }
 }

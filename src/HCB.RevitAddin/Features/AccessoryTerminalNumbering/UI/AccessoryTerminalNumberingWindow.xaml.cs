@@ -7,6 +7,8 @@ namespace HCB.RevitAddin.Features.AccessoryTerminalNumbering.UI;
 
 public partial class AccessoryTerminalNumberingWindow : Window
 {
+    private const string DefaultTargetParameterName = "LIN_POSITION_NUMBER_A";
+
     public AccessoryTerminalNumberingWindow(
         IReadOnlyList<string> availableTargetParameters,
         IReadOnlyList<string> availableAccessoryTypeParameters,
@@ -16,7 +18,9 @@ public partial class AccessoryTerminalNumberingWindow : Window
     {
         InitializeComponent();
         TargetParameterComboBox.ItemsSource = availableTargetParameters;
-        TargetParameterComboBox.SelectedIndex = availableTargetParameters.Count > 0 ? 0 : -1;
+        TargetParameterComboBox.SelectedItem = availableTargetParameters.Contains(DefaultTargetParameterName)
+            ? DefaultTargetParameterName
+            : availableTargetParameters.Count > 0 ? availableTargetParameters[0] : null;
 
         List<string> accessoryTypeOptions = ["(brak)"];
         accessoryTypeOptions.AddRange(availableAccessoryTypeParameters);
@@ -90,6 +94,14 @@ public partial class AccessoryTerminalNumberingWindow : Window
 
     private void UpdatePreview()
     {
+        if (PreviewTextBlock == null ||
+            DuctAccessoryPrefixPanel == null ||
+            PipeAccessoryPrefixPanel == null ||
+            TerminalPrefixPanel == null)
+        {
+            return;
+        }
+
         AccessoryTerminalNumberingOptions options = Options;
         string accessoryTypePart = string.IsNullOrWhiteSpace(options.AccessoryTypeParameterName)
             ? string.Empty
@@ -137,3 +149,4 @@ public partial class AccessoryTerminalNumberingWindow : Window
         return string.IsNullOrWhiteSpace(value) ? string.Empty : $".{value}";
     }
 }
+

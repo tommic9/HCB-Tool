@@ -4,9 +4,9 @@
         xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
         Title="Duct and Fitting Numbering"
         Width="460"
-        Height="280"
+        Height="320"
         MinWidth="420"
-        MinHeight="240"
+        MinHeight="280"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <ResourceDictionary>
@@ -23,12 +23,14 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Duct and Fitting Numbering"
+        <TextBlock x:Name="WindowTitleTextBlock"
+                   Text="Duct and Fitting Numbering"
                    Style="{StaticResource SectionTitleStyle}" />
 
-        <GroupBox Grid.Row="1"
+        <GroupBox x:Name="OptionsGroupBox"
+                  Grid.Row="1"
                   Margin="0,16,0,0"
-                  Header="Dlugosc kanalu do grupowania">
+                  Header="Opcje numeracji">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="160" />
@@ -36,6 +38,9 @@
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition x:Name="LengthParameterSpacerRow" Height="Auto" />
+                    <RowDefinition x:Name="LengthParameterRow" Height="Auto" />
                     <RowDefinition Height="12" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -46,13 +51,19 @@
                 <ComboBox x:Name="TargetParameterComboBox"
                           Grid.Row="0"
                           Grid.Column="1" />
-                <TextBlock Style="{StaticResource SectionLabelStyle}"
-                           Grid.Row="2"
+                <TextBlock x:Name="LengthParameterLabel"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Grid.Row="3"
                            Text="Parametr dlugosci"
                            VerticalAlignment="Center" />
                 <ComboBox x:Name="LengthParameterComboBox"
-                          Grid.Row="2"
+                          Grid.Row="3"
                           Grid.Column="1" />
+                <CheckBox x:Name="IncludeSystemParameterCheckBox"
+                          Grid.Row="5"
+                          Grid.ColumnSpan="2"
+                          Content="Dodaj HC_System do numeru, jesli cala grupa ma jedna wspolna wartosc"
+                          VerticalAlignment="Center" />
             </Grid>
         </GroupBox>
 

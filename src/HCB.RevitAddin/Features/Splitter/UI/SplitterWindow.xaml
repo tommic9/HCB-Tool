@@ -1,0 +1,79 @@
+<Window x:Class="HCB.RevitAddin.Features.Splitter.UI.SplitterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
+        Title="Splitter"
+        Width="560"
+        Height="330"
+        MinWidth="520"
+        MinHeight="320"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/HCB.RevitAddin;component/UI/Styles/SharedStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Splitter"
+                   Style="{StaticResource SectionTitleStyle}" />
+
+        <GroupBox Grid.Row="1"
+                  Margin="0,16,0,12"
+                  Header="Dlugosc odcinka produkcyjnego">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="90" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="SegmentLengthTextBox"
+                         Margin="0,0,8,0"
+                         VerticalAlignment="Center" />
+
+                <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource SectionLabelStyle}"
+                           Text="mm" />
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Row="2"
+                  Margin="0,0,0,12"
+                  Header="Zakres">
+            <StackPanel>
+                <CheckBox x:Name="DuctsCheckBox"
+                          Margin="0,0,0,8"
+                          Content="Ducts" />
+                <CheckBox x:Name="PipesCheckBox"
+                          Content="Pipes" />
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Grid.Row="3"
+                  Header="Sposob pracy">
+            <TextBlock TextWrapping="Wrap"
+                       Style="{StaticResource StatusTextStyle}">
+                Po zatwierdzeniu klikaj wielokrotnie ducts i pipes. Strona startowa jest wyznaczana automatycznie na podstawie miejsca klikniecia blizej jednego z konektorow. Reszta dlugosci zostanie na przeciwnym koncu.
+            </TextBlock>
+        </GroupBox>
+
+        <controls:DialogFooterBar x:Name="FooterBar"
+                                  Grid.Row="4"
+                                  Margin="0,16,0,0"
+                                  PrimaryButtonText="Rozpocznij"
+                                  SecondaryButtonText="Anuluj"
+                                  PrimaryButtonClick="ConfirmButton_OnClick"
+                                  SecondaryButtonClick="CancelButton_OnClick" />
+    </Grid>
+</Window>
