@@ -198,6 +198,7 @@
     <Compile Include="Features\SystemAssigner\SystemAssignerCommand.cs" />
     <Compile Include="Features\SystemAssigner\SystemAssignerService.cs" />
     <Compile Include="Features\TransferViewTemplates\Models\TransferViewTemplatesResult.cs" />
+    <Compile Include="Features\TransferViewTemplates\TransferScheduleTemplatesCommand.cs" />
     <Compile Include="Features\TransferViewTemplates\TransferViewTemplatesCommand.cs" />
     <Compile Include="Features\TransferViewTemplates\TransferViewTemplatesService.cs" />
     <Compile Include="Features\TransferViewTemplates\UI\TransferViewTemplatesWindow.xaml.cs" />
@@ -300,5 +301,6 @@
 
   </Target>
 </Project>
+
 
 

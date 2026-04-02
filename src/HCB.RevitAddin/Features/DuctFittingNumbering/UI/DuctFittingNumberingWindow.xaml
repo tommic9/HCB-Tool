@@ -4,9 +4,9 @@
         xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
         Title="Duct and Fitting Numbering"
         Width="460"
-        Height="320"
+        Height="360"
         MinWidth="420"
-        MinHeight="280"
+        MinHeight="320"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <ResourceDictionary>
@@ -43,6 +43,8 @@
                     <RowDefinition x:Name="LengthParameterRow" Height="Auto" />
                     <RowDefinition Height="12" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Style="{StaticResource SectionLabelStyle}"
                            Grid.Row="0"
@@ -63,6 +65,11 @@
                           Grid.Row="5"
                           Grid.ColumnSpan="2"
                           Content="Dodaj HC_System do numeru, jesli cala grupa ma jedna wspolna wartosc"
+                          VerticalAlignment="Center" />
+                <CheckBox x:Name="UseLastProjectNumberCheckBox"
+                          Grid.Row="7"
+                          Grid.ColumnSpan="2"
+                          Content="Pobierz ostatni numer z projektu i zacznij od kolejnego"
                           VerticalAlignment="Center" />
             </Grid>
         </GroupBox>

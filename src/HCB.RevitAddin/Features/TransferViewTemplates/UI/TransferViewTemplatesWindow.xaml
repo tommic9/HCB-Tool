@@ -23,7 +23,8 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock Text="Transfer View Templates"
+        <TextBlock x:Name="HeaderTextBlock"
+                   Text="Transfer View Templates"
                    Style="{StaticResource SectionTitleStyle}" />
         <GroupBox Grid.Row="1"
                   Margin="0,16,0,16"
@@ -66,7 +67,8 @@
                  Grid.Row="2"
                  Margin="0,0,0,8"
                  TextChanged="SearchTextBox_OnTextChanged" />
-        <GroupBox Grid.Row="3"
+        <GroupBox x:Name="TemplatesGroupBox"
+                  Grid.Row="3"
                   Header="Szablony widokow">
             <DockPanel LastChildFill="True">
                 <controls:SelectionActionsBar DockPanel.Dock="Top"

@@ -31,7 +31,7 @@ public sealed class SpaceToElementService
 
     public SpaceToElementResult Apply(Document document, View activeView)
     {
-        List<Space> spaces = new FilteredElementCollector(document, activeView.Id)
+        List<Space> spaces = new FilteredElementCollector(document)
             .OfCategory(BuiltInCategory.OST_MEPSpaces)
             .WhereElementIsNotElementType()
             .Cast<Space>()
@@ -40,7 +40,7 @@ public sealed class SpaceToElementService
         SpaceToElementResult result = new();
         if (spaces.Count == 0)
         {
-            result.Messages.Add("Brak przestrzeni MEP w aktywnym widoku.");
+            result.Messages.Add("Brak przestrzeni MEP w modelu.");
             return result;
         }
 
@@ -119,3 +119,4 @@ public sealed class SpaceToElementService
         return (boundingBox.Min + boundingBox.Max) * 0.5;
     }
 }
+

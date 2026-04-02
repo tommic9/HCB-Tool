@@ -75,7 +75,9 @@ public sealed class SplitterService
 
         if (orientedLine.Length <= options.SegmentLengthInternal + GeometryTolerance)
         {
-            return BuildSkipped(workingCurve.Id.Value, options, "za krotki na jeden pelny odcinek");
+            return rebuiltRuns > 0
+                ? BuildRebuildOnly(workingCurve.Id.Value, removedConnectorCount, "ciag przebudowano bez nowych podzialow")
+                : BuildSkipped(workingCurve.Id.Value, options, "za krotki na jeden pelny odcinek");
         }
 
         SplitCalibration calibration = Calibrate(document, workingCurve, orientedLine);
@@ -87,7 +89,9 @@ public sealed class SplitterService
         double minimumLengthForNextSplit = options.SegmentLengthInternal + calibration.NearTrim + calibration.FarTrim + GeometryTolerance;
         if (orientedLine.Length <= minimumLengthForNextSplit)
         {
-            return BuildSkipped(workingCurve.Id.Value, options, "za krotki na odcinki z lacznikiem");
+            return rebuiltRuns > 0
+                ? BuildRebuildOnly(workingCurve.Id.Value, removedConnectorCount, "ciag przebudowano bez nowych podzialow")
+                : BuildSkipped(workingCurve.Id.Value, options, "za krotki na odcinki z lacznikiem");
         }
 
         MEPCurve currentCurve = workingCurve;
@@ -122,7 +126,9 @@ public sealed class SplitterService
 
         if (splitCount == 0)
         {
-            return BuildSkipped(workingCurve.Id.Value, options, "za krotki na odcinki z lacznikiem");
+            return rebuiltRuns > 0
+                ? BuildRebuildOnly(workingCurve.Id.Value, removedConnectorCount, "ciag przebudowano bez nowych podzialow")
+                : BuildSkipped(workingCurve.Id.Value, options, "za krotki na odcinki z lacznikiem");
         }
 
         string rebuildSuffix = rebuiltRuns > 0
@@ -632,6 +638,17 @@ public sealed class SplitterService
             : 0d;
     }
 
+    private static SplitterResult BuildRebuildOnly(long elementId, int removedConnectorCount, string reason)
+    {
+        return new SplitterResult
+        {
+            Success = true,
+            HasChanges = true,
+            ElementId = elementId,
+            Message = $"Element {elementId}: {reason}. Usunieto {removedConnectorCount} wewnetrznych elementow."
+        };
+    }
+
     private static SplitterResult BuildFailure(long elementId, string message)
     {
         return new SplitterResult
@@ -729,5 +746,6 @@ public sealed class SplitterService
         public required XYZ FarEndPoint { get; init; }
     }
 }
+
 
 

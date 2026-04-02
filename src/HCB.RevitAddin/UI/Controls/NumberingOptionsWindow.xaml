@@ -4,9 +4,9 @@
         xmlns:controls="clr-namespace:HCB.RevitAddin.UI.Controls"
         Title="Numbering Options"
         Width="460"
-        Height="360"
+        Height="400"
         MinWidth="420"
-        MinHeight="300"
+        MinHeight="340"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <ResourceDictionary>
@@ -42,6 +42,8 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="12" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0"
@@ -61,20 +63,25 @@
                          Grid.Column="1"
                          Text="1" />
 
-                <TextBlock Grid.Row="4"
+                <CheckBox x:Name="UseLastProjectNumberCheckBox"
+                          Grid.Row="4"
+                          Grid.ColumnSpan="2"
+                          Content="Pobierz ostatni numer z projektu i zacznij od kolejnego" />
+
+                <TextBlock Grid.Row="6"
                            Style="{StaticResource SectionLabelStyle}"
                            Text="Prefiks"
                            VerticalAlignment="Center" />
                 <TextBox x:Name="PrefixTextBox"
-                         Grid.Row="4"
+                         Grid.Row="6"
                          Grid.Column="1" />
 
-                <TextBlock Grid.Row="6"
+                <TextBlock Grid.Row="8"
                            Style="{StaticResource SectionLabelStyle}"
                            Text="Sufiks"
                            VerticalAlignment="Center" />
                 <TextBox x:Name="SuffixTextBox"
-                         Grid.Row="6"
+                         Grid.Row="8"
                          Grid.Column="1" />
             </Grid>
         </GroupBox>

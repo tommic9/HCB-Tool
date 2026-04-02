@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -101,7 +101,9 @@ public sealed class AccessoryTerminalNumberingService
         foreach (string systemAbbreviation in groups.Keys.OrderBy(key => key, StringComparer.CurrentCultureIgnoreCase))
         {
             SystemGroup group = groups[systemAbbreviation];
-            int currentNumber = options.StartNumber;
+            int currentNumber = options.UseLastProjectNumber
+                ? GetNextProjectNumber(document, options.TargetParameterName, systemAbbreviation)
+                : options.StartNumber;
 
             foreach (var pair in group.DuctAccessories.OrderBy(pair => pair.Key, AccessoryKeyComparer.Instance))
             {
@@ -166,7 +168,54 @@ public sealed class AccessoryTerminalNumberingService
         {
             result.Messages.Add("Nie zapisano zadnej wartosci. Wybrany parametr docelowy nie byl dostepny do zapisu na elementach.");
         }
+
         return result;
+    }
+
+    private static int GetNextProjectNumber(Document document, string targetParameterName, string systemAbbreviation)
+    {
+        int maxNumber = 0;
+
+        IEnumerable<Element> elements = new FilteredElementCollector(document)
+            .WhereElementIsNotElementType()
+            .Where(IsSupported);
+
+        foreach (Element element in elements)
+        {
+            if (!string.Equals(GetSystemAbbreviation(document, element), systemAbbreviation, StringComparison.CurrentCultureIgnoreCase))
+            {
+                continue;
+            }
+
+            Parameter? parameter = element.LookupParameter(targetParameterName);
+            string text = (parameter?.AsString() ?? parameter?.AsValueString() ?? string.Empty).Trim();
+            int? parsed = ExtractLastNumber(text);
+            if (parsed.HasValue && parsed.Value > maxNumber)
+            {
+                maxNumber = parsed.Value;
+            }
+        }
+
+        return maxNumber + 1;
+    }
+
+    private static int? ExtractLastNumber(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        string[] parts = text.Split(['.', '-', '/', ' ', '_'], StringSplitOptions.RemoveEmptyEntries);
+        for (int index = parts.Length - 1; index >= 0; index--)
+        {
+            if (int.TryParse(parts[index], out int value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static bool IsSupported(Element? element)
@@ -446,9 +495,9 @@ public sealed class AccessoryTerminalNumberingService
             return string.Compare(x.Airflow ?? string.Empty, y.Airflow ?? string.Empty, StringComparison.CurrentCultureIgnoreCase);
         }
     }
+
     private static long? GetCategoryId(Element? element)
     {
         return element?.Category?.Id?.Value;
     }
 }
-

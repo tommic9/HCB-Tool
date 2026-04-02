@@ -58,6 +58,7 @@ public sealed class ManualNumberingCommand : IExternalCommand
         {
             ParameterName = optionsWindow.SelectedParameterName,
             StartNumber = optionsWindow.StartNumber,
+            UseLastProjectNumber = optionsWindow.UseLastProjectNumber,
             Prefix = optionsWindow.Prefix,
             Suffix = optionsWindow.Suffix
         };
@@ -71,7 +72,9 @@ public sealed class ManualNumberingCommand : IExternalCommand
             try
             {
                 int currentIndex = orderedElements.Count + 1;
-                string previewValue = $"{options.Prefix}{options.StartNumber + orderedElements.Count}{options.Suffix}";
+                string previewValue = options.UseLastProjectNumber
+                    ? $"{options.Prefix}ostatni+{orderedElements.Count + 1}{options.Suffix}"
+                    : $"{options.Prefix}{options.StartNumber + orderedElements.Count}{options.Suffix}";
                 reference = uiDocument.Selection.PickObject(
                     ObjectType.Element,
                     new RemainingSelectionFilter(remainingIds),
@@ -109,11 +112,11 @@ public sealed class ManualNumberingCommand : IExternalCommand
                 ["ElementId"] = element.Id.Value.ToString(),
                 ["Category"] = element.Category?.Name ?? string.Empty,
                 ["Name"] = element.Name ?? string.Empty,
-                ["Value"] = $"{options.Prefix}{options.StartNumber + index}{options.Suffix}"
+                ["Value"] = element.LookupParameter(options.ParameterName)?.AsString() ?? string.Empty
             })
             .ToList();
 
-        string summary = $"Wybrane: {selectedElements.Count}\nZaktualizowane: {result.UpdatedCount}\nPominiete: {result.SkippedCount}";
+        string summary = $"Wybrane: {selectedElements.Count}\nZaktualizowane: {result.UpdatedCount}\nPominiete: {result.SkippedCount}\nStart od ostatniego numeru: {(options.UseLastProjectNumber ? "Tak" : "Nie")}";
         if (result.Messages.Count > 0)
         {
             summary += $"\n{string.Join("\n", result.Messages.Take(6))}";
@@ -126,7 +129,7 @@ public sealed class ManualNumberingCommand : IExternalCommand
             rows,
             "manual-numbering.csv",
             null,
-            "PokaÅ¼ element",
+            "Poka¿ element",
             row =>
             {
                 if (!row.TryGetValue("ElementId", out string? elementIdText) ||

@@ -42,6 +42,7 @@ public partial class AccessoryTerminalNumberingWindow : Window
     {
         TargetParameterName = GetSelectedString(TargetParameterComboBox),
         StartNumber = int.TryParse(GetText(StartNumberTextBox), out int value) ? value : 0,
+        UseLastProjectNumber = UseLastProjectNumberCheckBox?.IsChecked == true,
         DuctAccessoryPrefix = GetText(DuctAccessoryPrefixTextBox),
         PipeAccessoryPrefix = GetText(PipeAccessoryPrefixTextBox),
         TerminalPrefix = GetText(TerminalPrefixTextBox),
@@ -56,9 +57,9 @@ public partial class AccessoryTerminalNumberingWindow : Window
             return;
         }
 
-        if (Options.StartNumber <= 0)
+        if (!Options.UseLastProjectNumber && Options.StartNumber <= 0)
         {
-            FooterBar.StatusText = "Podaj dodatni numer startowy.";
+            FooterBar.StatusText = "Podaj dodatni numer startowy albo zaznacz pobieranie ostatniego numeru z projektu.";
             return;
         }
 
@@ -141,6 +142,11 @@ public partial class AccessoryTerminalNumberingWindow : Window
 
     private string GetPreviewNumber()
     {
+        if (Options.UseLastProjectNumber)
+        {
+            return "ostatni+1";
+        }
+
         return Options.StartNumber > 0 ? Options.StartNumber.ToString() : "1";
     }
 
@@ -149,4 +155,3 @@ public partial class AccessoryTerminalNumberingWindow : Window
         return string.IsNullOrWhiteSpace(value) ? string.Empty : $".{value}";
     }
 }
-

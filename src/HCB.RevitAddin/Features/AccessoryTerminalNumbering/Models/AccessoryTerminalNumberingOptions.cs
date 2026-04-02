@@ -6,6 +6,8 @@ public sealed class AccessoryTerminalNumberingOptions
 
     public int StartNumber { get; set; } = 1;
 
+    public bool UseLastProjectNumber { get; set; }
+
     public string DuctAccessoryPrefix { get; set; } = string.Empty;
 
     public string PipeAccessoryPrefix { get; set; } = string.Empty;

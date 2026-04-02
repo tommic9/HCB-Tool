@@ -37,11 +37,11 @@ public partial class DuctFittingNumberingWindow : Window
             LengthParameterComboBox.Visibility = Visibility.Collapsed;
             LengthParameterSpacerRow.Height = new GridLength(0);
             LengthParameterRow.Height = new GridLength(0);
-            FooterBar.StatusText = "Wybierz parametr docelowy. Numeracja grupuje ksztaltki i akcesoria po parametrach LIN.";
+            FooterBar.StatusText = "Wybierz parametr docelowy. Numeracja grupuje ksztaltki i akcesoria po parametrach LIN; opcjonalnie moze startowac od ostatniego numeru w projekcie.";
             return;
         }
 
-        FooterBar.StatusText = "Wybierz parametr docelowy, parametr dlugosci dla kanalow i opcjonalnie dolacz HC_System.";
+        FooterBar.StatusText = "Wybierz parametr docelowy, parametr dlugosci dla kanalow i opcjonalnie dolacz HC_System albo start od ostatniego numeru w projekcie.";
     }
 
     public string SelectedTargetParameter => TargetParameterComboBox.SelectedItem as string ?? string.Empty;
@@ -51,6 +51,8 @@ public partial class DuctFittingNumberingWindow : Window
         : string.Empty;
 
     public bool IncludeSystemParameter => IncludeSystemParameterCheckBox.IsChecked == true;
+
+    public bool UseLastProjectNumber => UseLastProjectNumberCheckBox.IsChecked == true;
 
     private void ConfirmButton_OnClick(object sender, RoutedEventArgs e)
     {
@@ -76,3 +78,5 @@ public partial class DuctFittingNumberingWindow : Window
         Close();
     }
 }
+
+

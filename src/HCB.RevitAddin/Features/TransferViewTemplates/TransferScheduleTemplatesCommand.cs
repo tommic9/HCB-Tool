@@ -7,7 +7,7 @@ using HCB.RevitAddin.Features.TransferViewTemplates.UI;
 namespace HCB.RevitAddin.Features.TransferViewTemplates;
 
 [Transaction(TransactionMode.Manual)]
-public sealed class TransferViewTemplatesCommand : IExternalCommand
+public sealed class TransferScheduleTemplatesCommand : IExternalCommand
 {
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
@@ -16,11 +16,11 @@ public sealed class TransferViewTemplatesCommand : IExternalCommand
 
         if (documents.Count < 2)
         {
-            TaskDialog.Show("Transfer View Templates", "Potrzebne sa co najmniej dwa otwarte projekty.");
+            TaskDialog.Show("Transfer Schedule Templates", "Potrzebne sa co najmniej dwa otwarte projekty.");
             return Result.Succeeded;
         }
 
-        TransferViewTemplatesWindow window = new(documents, schedulesOnly: false);
+        TransferViewTemplatesWindow window = new(documents, schedulesOnly: true);
         if (window.ShowDialog() != true || window.SourceDocument == null || window.TargetDocument == null)
         {
             return Result.Cancelled;
@@ -33,7 +33,7 @@ public sealed class TransferViewTemplatesCommand : IExternalCommand
             window.OverrideExisting);
 
         TaskDialog.Show(
-            "Transfer View Templates",
+            "Transfer Schedule Templates",
             $"Skopiowane szablony: {result.CopiedCount}\n\n{string.Join("\n", result.Messages)}");
 
         return Result.Succeeded;

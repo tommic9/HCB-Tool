@@ -49,6 +49,7 @@ public sealed class DuctFittingsNumberingCommand : IExternalCommand
             window.SelectedTargetParameter,
             null,
             window.IncludeSystemParameter,
+            window.UseLastProjectNumber,
             DuctFittingNumberingService.NumberingScope.Fittings);
 
         string messages = result.Messages.Count > 0
@@ -57,7 +58,7 @@ public sealed class DuctFittingsNumberingCommand : IExternalCommand
 
         TaskDialog.Show(
             "Duct Fitting Numbering",
-            $"Tryb: {scopeLabel}\nPonumerowano ksztaltek: {result.FittingCount}\nPonumerowano akcesoriow: {result.AccessoryCount}\nWspoldzielony numer: {result.SharedNumberCount}\nSystemy: {result.SystemsCount}\nParametr docelowy: {result.TargetParameterName}\nDodaj HC_System: {(result.IncludeSystemParameter ? "Tak" : "Nie")}{messages}");
+            $"Tryb: {scopeLabel}\nPonumerowano ksztaltek: {result.FittingCount}\nPonumerowano akcesoriow: {result.AccessoryCount}\nWspoldzielony numer: {result.SharedNumberCount}\nSystemy: {result.SystemsCount}\nParametr docelowy: {result.TargetParameterName}\nDodaj HC_System: {(result.IncludeSystemParameter ? "Tak" : "Nie")}\nStart od ostatniego numeru: {(window.UseLastProjectNumber ? "Tak" : "Nie")}{messages}");
 
         return Result.Succeeded;
     }

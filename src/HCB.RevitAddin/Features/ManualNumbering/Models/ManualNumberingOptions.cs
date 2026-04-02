@@ -6,6 +6,8 @@ public sealed class ManualNumberingOptions
 
     public int StartNumber { get; set; } = 1;
 
+    public bool UseLastProjectNumber { get; set; }
+
     public string Prefix { get; set; } = string.Empty;
 
     public string Suffix { get; set; } = string.Empty;

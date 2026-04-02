@@ -21,6 +21,8 @@ public partial class NumberingOptionsWindow : Window
 
     public int StartNumber => int.TryParse(StartNumberTextBox.Text, out int value) ? value : 0;
 
+    public bool UseLastProjectNumber => UseLastProjectNumberCheckBox.IsChecked == true;
+
     public string Prefix => PrefixTextBox.Text ?? string.Empty;
 
     public string Suffix => SuffixTextBox.Text ?? string.Empty;
@@ -33,9 +35,9 @@ public partial class NumberingOptionsWindow : Window
             return;
         }
 
-        if (StartNumber <= 0)
+        if (!UseLastProjectNumber && StartNumber <= 0)
         {
-            FooterBar.StatusText = "Podaj dodatni numer startowy.";
+            FooterBar.StatusText = "Podaj dodatni numer startowy albo zaznacz pobieranie ostatniego numeru z projektu.";
             return;
         }
 

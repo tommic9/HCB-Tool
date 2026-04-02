@@ -9,17 +9,27 @@ namespace HCB.RevitAddin.Features.TransferViewTemplates.UI;
 
 public partial class TransferViewTemplatesWindow : Window
 {
+    private readonly bool _schedulesOnly;
     private List<View> _allTemplates = new();
 
-    public TransferViewTemplatesWindow(IReadOnlyList<Document> documents)
+    public TransferViewTemplatesWindow(IReadOnlyList<Document> documents, bool schedulesOnly = false)
     {
+        _schedulesOnly = schedulesOnly;
+
         InitializeComponent();
+
+        string title = _schedulesOnly ? "Transfer Schedule Templates" : "Transfer View Templates";
+        Title = title;
+        HeaderTextBlock.Text = title;
+        TemplatesGroupBox.Header = _schedulesOnly ? "Szablony zestawien" : "Szablony widokow";
 
         SourceDocumentComboBox.ItemsSource = documents;
         SourceDocumentComboBox.DisplayMemberPath = "Title";
         TargetDocumentComboBox.ItemsSource = documents;
         TargetDocumentComboBox.DisplayMemberPath = "Title";
-        FooterBar.StatusText = "Wybierz projekt zrodlowy, docelowy i szablony do transferu.";
+        FooterBar.StatusText = _schedulesOnly
+            ? "Wybierz projekt zrodlowy, docelowy i szablony zestawien do transferu."
+            : "Wybierz projekt zrodlowy, docelowy i szablony widokow do transferu.";
     }
 
     public Document? SourceDocument => SourceDocumentComboBox.SelectedItem as Document;
@@ -42,7 +52,7 @@ public partial class TransferViewTemplatesWindow : Window
         _allTemplates = new FilteredElementCollector(SourceDocument)
             .OfClass(typeof(View))
             .Cast<View>()
-            .Where(view => view.IsTemplate)
+            .Where(IsMatchingTemplate)
             .OrderBy(view => view.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
@@ -95,5 +105,16 @@ public partial class TransferViewTemplatesWindow : Window
     {
         DialogResult = false;
         Close();
+    }
+
+    private bool IsMatchingTemplate(View view)
+    {
+        if (!view.IsTemplate)
+        {
+            return false;
+        }
+
+        bool isScheduleTemplate = view.ViewType is ViewType.Schedule or ViewType.PanelSchedule;
+        return _schedulesOnly ? isScheduleTemplate : !isScheduleTemplate;
     }
 }

@@ -98,6 +98,7 @@ public sealed class DuctFittingNumberingService
         string targetParameterName,
         string? lengthParameterName,
         bool includeSystemParameter,
+        bool useLastProjectNumber,
         NumberingScope scope = NumberingScope.DuctsAndFittings)
     {
         List<Element> filteredElements = elements
@@ -116,7 +117,9 @@ public sealed class DuctFittingNumberingService
         using Transaction transaction = new(document, "Duct and Fitting Numbering");
         transaction.Start();
 
-        int currentNumber = 1;
+        int currentNumber = useLastProjectNumber
+            ? GetNextProjectNumber(document, targetParameterName)
+            : 1;
 
         foreach ((DuctKey _, NumberingGroup group) in groups.Ducts.OrderBy(pair => pair.Key, DuctKeyComparer.Instance))
         {
@@ -169,6 +172,43 @@ public sealed class DuctFittingNumberingService
         }
 
         return result;
+    }
+
+    private static int GetNextProjectNumber(Document document, string targetParameterName)
+    {
+        int maxNumber = 0;
+
+        foreach (Element element in new FilteredElementCollector(document).WhereElementIsNotElementType())
+        {
+            Parameter? parameter = element.LookupParameter(targetParameterName);
+            string text = (parameter?.AsString() ?? parameter?.AsValueString() ?? string.Empty).Trim();
+            int? parsed = ExtractLastNumber(text);
+            if (parsed.HasValue && parsed.Value > maxNumber)
+            {
+                maxNumber = parsed.Value;
+            }
+        }
+
+        return maxNumber + 1;
+    }
+
+    private static int? ExtractLastNumber(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        string[] parts = text.Split(['.', '-', '/', ' ', '_'], StringSplitOptions.RemoveEmptyEntries);
+        for (int index = parts.Length - 1; index >= 0; index--)
+        {
+            if (int.TryParse(parts[index], out int value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static bool IsSupported(Element? element, NumberingScope scope)
@@ -267,7 +307,7 @@ public sealed class DuctFittingNumberingService
             values.Add(GetGroupingParameterValue(element, parameterName));
         }
 
-        return new(category, values);
+        return new(category, string.Join("|", values));
     }
 
     private static string GetGroupingParameterValue(Element element, string parameterName)
@@ -553,7 +593,7 @@ public sealed class DuctFittingNumberingService
 
     private sealed record DuctKey(string Size, double? Length, string TypeName, bool IsRound);
 
-    private sealed record ComponentKey(BuiltInCategory Category, IReadOnlyList<string> Values);
+    private sealed record ComponentKey(BuiltInCategory Category, string Signature);
 
     private sealed class DuctKeyComparer : IComparer<DuctKey>
     {
@@ -625,19 +665,12 @@ public sealed class DuctFittingNumberingService
                 return categoryComparison;
             }
 
-            int count = Math.Max(x.Values.Count, y.Values.Count);
-            for (int index = 0; index < count; index++)
-            {
-                string left = index < x.Values.Count ? x.Values[index] ?? string.Empty : string.Empty;
-                string right = index < y.Values.Count ? y.Values[index] ?? string.Empty : string.Empty;
-                int compare = string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
-                if (compare != 0)
-                {
-                    return compare;
-                }
-            }
-
-            return 0;
+            return string.Compare(x.Signature ?? string.Empty, y.Signature ?? string.Empty, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }
+
+
+
+
+

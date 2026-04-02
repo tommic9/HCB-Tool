@@ -148,8 +148,8 @@ namespace HCB.RevitAddin
                                     "HcbSpaceToElementButton",
                                     "Space To Element",
                                     typeof(Features.SpaceToElement.SpaceToElementCommand),
-                                    "Uzupelnia LIN_ROOM_* na podstawie lokalnych przestrzeni MEP.",
-                                    "Co robi: uzupelnia LIN_ROOM_* na podstawie lokalnych przestrzeni MEP. Jak uzyc: 1. Otworz odpowiedni widok. 2. Uruchom narzedzie. 3. Zapisz wynik. Zakres: aktywny widok z widocznymi elementami i spaces. Uwagi: to alternatywa dla pracy na roomach z linku.")
+                                    "Uzupelnia LIN_ROOM_* na podstawie wszystkich lokalnych przestrzeni MEP w modelu.",
+                                    "Co robi: uzupelnia LIN_ROOM_* na podstawie wszystkich lokalnych przestrzeni MEP w modelu. Jak uzyc: 1. Otworz odpowiedni widok. 2. Uruchom narzedzie. 3. Zapisz wynik. Zakres: wszystkie spaces w modelu oraz elementy z obslugiwanych kategorii. Uwagi: to alternatywa dla pracy na roomach z linku.")
                             ])
                         ,
                         new RibbonStackDefinition(
@@ -246,12 +246,27 @@ namespace HCB.RevitAddin
                                     typeof(Features.ViewsDuplicate.ViewsDuplicateCommand),
                                     "Duplikuje wiele widokow naraz.",
                                     "Co robi: duplikuje wiele widokow naraz. Jak uzyc: 1. Wybierz widoki. 2. Ustaw liczbe kopii i tryb duplikacji. 3. Zatwierdz. Zakres: tworzy serie kopii wybranych widokow."),
-                                new RibbonPushButtonDefinition(
-                                    "HcbTransferViewTemplatesButton",
+                                new RibbonPulldownDefinition(
+                                    "HcbTemplatesPulldown",
                                     "Templates",
                                     typeof(Features.TransferViewTemplates.TransferViewTemplatesCommand),
-                                    "Kopiuje wybrane view templates miedzy otwartymi projektami.",
-                                    "Co robi: kopiuje view templates miedzy otwartymi projektami. Jak uzyc: 1. Otworz projekt zrodlowy i docelowy. 2. Wybierz templates do skopiowania. 3. Zdecyduj o nadpisaniu istniejacych pozycji. Zakres: szybka synchronizacja standardu widokow.")
+                                    null,
+                                    "Udostepnia narzedzia do kopiowania szablonow widokow i zestawien miedzy otwartymi projektami.",
+                                    "Co robi: udostepnia osobne polecenia do kopiowania szablonow widokow i szablonow zestawien miedzy otwartymi projektami. Jak uzyc: wybierz odpowiednie polecenie z listy, wskaz projekt zrodlowy i docelowy, a potem zaznacz szablony do transferu. Zakres: synchronizacja standardu widokow i zestawien pomiedzy otwartymi modelami.",
+                                    [
+                                        new RibbonPushButtonDefinition(
+                                            "HcbTransferViewTemplatesButton",
+                                            "View Templates",
+                                            typeof(Features.TransferViewTemplates.TransferViewTemplatesCommand),
+                                            "Kopiuje wybrane szablony widokow miedzy otwartymi projektami.",
+                                            "Co robi: kopiuje szablony widokow miedzy otwartymi projektami. Jak uzyc: 1. Otworz projekt zrodlowy i docelowy. 2. Wybierz view templates do skopiowania. 3. Zdecyduj o nadpisaniu istniejacych pozycji. Zakres: szybka synchronizacja standardu widokow bez szablonow zestawien."),
+                                        new RibbonPushButtonDefinition(
+                                            "HcbTransferScheduleTemplatesButton",
+                                            "Schedule Templates",
+                                            typeof(Features.TransferViewTemplates.TransferScheduleTemplatesCommand),
+                                            "Kopiuje wybrane szablony zestawien miedzy otwartymi projektami.",
+                                            "Co robi: kopiuje szablony zestawien miedzy otwartymi projektami. Jak uzyc: 1. Otworz projekt zrodlowy i docelowy. 2. Wybierz szablony zestawien do skopiowania. 3. Zdecyduj o nadpisaniu istniejacych pozycji. Zakres: szybka synchronizacja standardu zestawien pomiedzy otwartymi modelami.")
+                                    ])
                             ]),
                         new RibbonPushButtonDefinition(
                             "HcbViewFiltersLegendButton",
@@ -396,6 +411,9 @@ namespace HCB.RevitAddin
     internal sealed record RibbonStackDefinition(
         IReadOnlyList<RibbonStackItemDefinition> Items) : RibbonItemDefinition;
 }
+
+
+
 
 
 

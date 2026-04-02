@@ -24,7 +24,9 @@ public sealed class ManualNumberingService
     public ManualNumberingResult Apply(Document document, IEnumerable<Element> elements, ManualNumberingOptions options)
     {
         ManualNumberingResult result = new();
-        int currentNumber = options.StartNumber;
+        int currentNumber = options.UseLastProjectNumber
+            ? GetNextProjectNumber(document, options.ParameterName)
+            : options.StartNumber;
 
         using Transaction transaction = new(document, "Manual Numbering");
         transaction.Start();
@@ -52,5 +54,42 @@ public sealed class ManualNumberingService
         }
 
         return result;
+    }
+
+    private static int GetNextProjectNumber(Document document, string parameterName)
+    {
+        int maxNumber = 0;
+
+        foreach (Element element in new FilteredElementCollector(document).WhereElementIsNotElementType())
+        {
+            Parameter? parameter = element.LookupParameter(parameterName);
+            string text = (parameter?.AsString() ?? parameter?.AsValueString() ?? string.Empty).Trim();
+            int? parsed = ExtractLastNumber(text);
+            if (parsed.HasValue && parsed.Value > maxNumber)
+            {
+                maxNumber = parsed.Value;
+            }
+        }
+
+        return maxNumber + 1;
+    }
+
+    private static int? ExtractLastNumber(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        string[] parts = text.Split(['.', '-', '/', ' ', '_'], StringSplitOptions.RemoveEmptyEntries);
+        for (int index = parts.Length - 1; index >= 0; index--)
+        {
+            if (int.TryParse(parts[index], out int value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 }
